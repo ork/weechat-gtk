@@ -17,7 +17,7 @@ void weechat_cmd_init(weechat_t* weechat, const gchar* password, gboolean compre
 /* Request an info
  * 
  */
-//info
+void weechat_cmd_info(weechat_t* weechat, const gchar* id, const gchar* info);
 
 /* Request an infolist
  * 

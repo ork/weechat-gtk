@@ -12,6 +12,27 @@ void weechat_cmd_init(weechat_t* weechat, const gchar* password,
     g_free(msg);
 }
 
+void weechat_cmd_info(weechat_t* weechat, const gchar* id, const gchar* info)
+{
+    g_return_if_fail(info != NULL);
+
+    GString* str = g_string_new("");
+    gchar* msg;
+
+    /* Construct */
+    if (id != NULL) {
+        g_string_append_printf(str, "(%s) ", id);
+    }
+    g_string_append_printf(str, "info %s", info);
+    msg = g_string_free(str, FALSE);
+
+    /* Send */
+    g_return_if_fail(weechat_send(weechat, msg));
+
+    /* Process */
+    weechat_receive(weechat);
+}
+
 void weechat_cmd_nicklist(weechat_t* weechat, const gchar* id, const gchar* buffer)
 {
     GString* str = g_string_new("");
