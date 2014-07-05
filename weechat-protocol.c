@@ -1,3 +1,5 @@
+/* See COPYING file for license and copyright information */
+
 #include <glib/gprintf.h>
 #include <string.h>
 #include "weechat-protocol.h"

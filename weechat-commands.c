@@ -1,3 +1,5 @@
+/* See COPYING file for license and copyright information */
+
 #include "weechat-commands.h"
 
 void weechat_cmd_init(weechat_t* weechat, const gchar* password,

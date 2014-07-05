@@ -1,3 +1,5 @@
+/* See COPYING file for license and copyright information */
+
 #include <glib.h>
 #include "weechat-protocol.h"
 #include "weechat-commands.h"

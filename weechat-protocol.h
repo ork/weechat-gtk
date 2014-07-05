@@ -1,3 +1,5 @@
+/* See COPYING file for license and copyright information */
+
 #pragma once
 
 #include <gio/gio.h>
