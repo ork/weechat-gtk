@@ -62,7 +62,7 @@ gchar* weechat_decode_ptr(GDataInputStream* stream, gsize* remaining);
 
 gchar* weechat_decode_tim(GDataInputStream* stream, gsize* remaining);
 
-void weechat_decode_arr(GDataInputStream* stream, gsize* remaining);
+GVariant* weechat_decode_arr(GDataInputStream* stream, gsize* remaining);
 
 void weechat_unmarshal(GDataInputStream* stream, type_t type, gsize* remaining);
 
