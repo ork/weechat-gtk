@@ -200,8 +200,8 @@ void weechat_unmarshal(GDataInputStream* stream, type_t type, gsize* remaining)
         break;
     case INF:
         w_inf = weechat_decode_inf(stream, remaining);
-        w_inf_k = g_variant_get_string(g_variant_get_child_value(w_inf, 0), NULL);
-        w_inf_v = g_variant_get_string(g_variant_get_child_value(w_inf, 1), NULL);
+        w_inf_k = g_variant_dup_string(g_variant_get_child_value(w_inf, 0), NULL);
+        w_inf_v = g_variant_dup_string(g_variant_get_child_value(w_inf, 1), NULL);
         g_printf("{'%s':'%s'}\n", w_inf_k, w_inf_v);
         break;
     default:
@@ -332,7 +332,6 @@ GVariant* weechat_decode_arr(GDataInputStream* stream, gsize* remaining)
 
 GVariant* weechat_decode_inf(GDataInputStream* stream, gsize* remaining)
 {
-    GVariantType* entry = g_variant_type_new_dict_entry(G_VARIANT_TYPE_STRING, G_VARIANT_TYPE_STRING);
     GVariant* pair;
 
     // FIXME: Ensure UTF-8 encoding for strings
@@ -344,8 +343,7 @@ GVariant* weechat_decode_inf(GDataInputStream* stream, gsize* remaining)
     gchar* val = weechat_decode_str(stream, remaining);
 
     /* K-V pair */
-    pair = g_variant_new(g_variant_type_dup_string(entry),
-                         g_variant_new_string(key), g_variant_new_string(val));
+    pair = g_variant_new("{ss}", key, val);
 
     return pair;
 }
