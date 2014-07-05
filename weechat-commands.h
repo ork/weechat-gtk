@@ -27,7 +27,7 @@ void weechat_cmd_init(weechat_t* weechat, const gchar* password, gboolean compre
 /* Request a nicklist
  * 
  */
-//nicklist
+void weechat_cmd_nicklist(weechat_t* weechat, const gchar* id, const gchar* buffer);
 
 /* Send data to a buffer (text or command)
  * 

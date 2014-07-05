@@ -184,7 +184,7 @@ void weechat_unmarshal(GDataInputStream* stream, type_t type, gsize* remaining)
         const gchar* arr_gv = g_variant_type_peek_string(
             g_variant_type_element(g_variant_get_type(w_arr)));
 
-        g_printf("arr -> of %d x %s: [", g_variant_n_children(w_arr), arr_gv);
+        g_printf("arr -> of %zu x %s: [", g_variant_n_children(w_arr), arr_gv);
         g_variant_get(w_arr, g_variant_get_type_string(w_arr), &iter);
         while (g_variant_iter_loop(iter, arr_gv, &str)) {
             if (g_strcmp0(arr_gv, "s") == 0) {
@@ -303,7 +303,7 @@ GVariant* weechat_decode_arr(GDataInputStream* stream, gsize* remaining)
         var_at = g_strdup("as");
     } else {
         g_critical("Type [%s] cant exist in array\n", types[arr_t]);
-        return;
+        return NULL;
     }
     builder = g_variant_builder_new(G_VARIANT_TYPE(var_at));
 

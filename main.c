@@ -19,6 +19,7 @@ int main(int argc, char* argv[])
     weechat_cmd_init(weechat, "1234", FALSE);
     weechat_cmd_ping(weechat, "hello");
     weechat_cmd_test(weechat);
+    weechat_cmd_nicklist(weechat, NULL, NULL);
     weechat_cmd_quit(weechat);
 
     return 0;
