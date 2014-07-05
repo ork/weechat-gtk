@@ -81,7 +81,7 @@ error_free:
 
 void weechat_receive(weechat_t* weechat)
 {
-    answer_t* answer = weechat_parse_body(weechat);
+    answer_t* answer = weechat_parse_header(weechat);
     gsize remaining = answer->length - 5;
     GDataInputStream* mem = g_data_input_stream_new(
         g_memory_input_stream_new_from_data(answer->body, remaining, NULL));
@@ -98,7 +98,7 @@ void weechat_receive(weechat_t* weechat)
     }
 }
 
-answer_t* weechat_parse_body(weechat_t* weechat)
+answer_t* weechat_parse_header(weechat_t* weechat)
 {
     answer_t* answer = g_try_malloc0(sizeof(answer_t));
     gssize body_read;

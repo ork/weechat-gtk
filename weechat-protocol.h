@@ -48,7 +48,7 @@ gboolean weechat_send(weechat_t* weechat, const gchar* msg);
 
 void weechat_receive(weechat_t* weechat);
 
-answer_t* weechat_parse_body(weechat_t* weechat);
+answer_t* weechat_parse_header(weechat_t* weechat);
 
 gchar* weechat_decode_str(GDataInputStream* stream, gsize* remaining);
 
