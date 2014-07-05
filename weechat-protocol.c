@@ -182,7 +182,7 @@ void weechat_unmarshal(GDataInputStream* stream, type_t type, gsize* remaining)
     case ARR:
         w_arr = weechat_decode_arr(stream, remaining);
         GVariantIter* iter;
-        void* str;
+        gpointer str;
         const gchar* arr_gv = g_variant_type_peek_string(
             g_variant_type_element(g_variant_get_type(w_arr)));
 
@@ -190,9 +190,9 @@ void weechat_unmarshal(GDataInputStream* stream, type_t type, gsize* remaining)
         g_variant_get(w_arr, g_variant_get_type_string(w_arr), &iter);
         while (g_variant_iter_loop(iter, arr_gv, &str)) {
             if (g_strcmp0(arr_gv, "s") == 0) {
-                g_printf(" %s,", str);
+                g_printf(" %s,", (gchar*)str);
             } else if (g_strcmp0(arr_gv, "i") == 0) {
-                g_printf(" %d,", str);
+                g_printf(" %d,", GPOINTER_TO_INT(str));
             }
         }
         g_printf("]\n");
