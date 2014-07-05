@@ -147,6 +147,8 @@ void weechat_unmarshal(GDataInputStream* stream, type_t type, gsize* remaining)
     gchar* w_ptr;
     gchar* w_tim;
     GVariant* w_arr;
+    GVariant* w_inf;
+    gchar* w_inf_k, *w_inf_v;
 
     switch (type) {
     case CHR:
@@ -195,6 +197,12 @@ void weechat_unmarshal(GDataInputStream* stream, type_t type, gsize* remaining)
         }
         g_printf("]\n");
         g_variant_iter_free(iter);
+        break;
+    case INF:
+        w_inf = weechat_decode_inf(stream, remaining);
+        w_inf_k = g_variant_get_string(g_variant_get_child_value(w_inf, 0), NULL);
+        w_inf_v = g_variant_get_string(g_variant_get_child_value(w_inf, 1), NULL);
+        g_printf("{'%s':'%s'}\n", w_inf_k, w_inf_v);
         break;
     default:
         g_printf("Type [%s] Not implemented.\n", types[type]);
@@ -320,6 +328,26 @@ GVariant* weechat_decode_arr(GDataInputStream* stream, gsize* remaining)
     g_variant_builder_unref(builder);
 
     return value;
+}
+
+GVariant* weechat_decode_inf(GDataInputStream* stream, gsize* remaining)
+{
+    GVariantType* entry = g_variant_type_new_dict_entry(G_VARIANT_TYPE_STRING, G_VARIANT_TYPE_STRING);
+    GVariant* pair;
+
+    // FIXME: Ensure UTF-8 encoding for strings
+
+    /* Key */
+    gchar* key = weechat_decode_str(stream, remaining);
+
+    /* Value */
+    gchar* val = weechat_decode_str(stream, remaining);
+
+    /* K-V pair */
+    pair = g_variant_new(g_variant_type_dup_string(entry),
+                         g_variant_new_string(key), g_variant_new_string(val));
+
+    return pair;
 }
 
 type_t weechat_decode_type(GDataInputStream* stream, gsize* remaining)
