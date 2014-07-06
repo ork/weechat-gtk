@@ -8,17 +8,25 @@ static const char* types[] = {
     "chr", "int", "lon", "str", "buf", "ptr", "tim", "htb", "hda", "inf", "inl", "arr"
 };
 
-static gchar* wtype_to_gvtype(const gchar* wtype)
+static gchar* wtype_to_gvtype(const gchar* wtype, gboolean maybe)
 {
-    if (g_strcmp0(wtype, "int") == 0) {
-        return "i";
-    } else if (g_strcmp0(wtype, "str") == 0) {
-        return "s";
-    } else if (g_strcmp0(wtype, "chr") == 0) {
-        return "y";
-    } else if (g_strcmp0(wtype, "ptr") == 0) {
-        return "s";
+    GString* gvtype = g_string_new("");
+
+    if (maybe) {
+        g_string_append_c(gvtype, 'm');
     }
+
+    if (g_strcmp0(wtype, "int") == 0) {
+        g_string_append_c(gvtype, 'i');
+    } else if (g_strcmp0(wtype, "str") == 0) {
+        g_string_append_c(gvtype, 's');
+    } else if (g_strcmp0(wtype, "chr") == 0) {
+        g_string_append_c(gvtype, 'y');
+    } else if (g_strcmp0(wtype, "ptr") == 0) {
+        g_string_append_c(gvtype, 's');
+    }
+
+    return g_string_free(gvtype, FALSE);
 }
 
 weechat_t* weechat_create()
