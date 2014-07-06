@@ -355,7 +355,6 @@ GVariant* weechat_decode_inf(GDataInputStream* stream, gsize* remaining)
 // WIP
 GVariant* weechat_decode_htb(GDataInputStream* stream, gsize* remaining)
 {
-    GVariant* dict;
     type_t k, v;
     gchar* type_k, *type_v;
     gint32 count;
@@ -373,7 +372,6 @@ GVariant* weechat_decode_htb(GDataInputStream* stream, gsize* remaining)
 GVariant* weechat_decode_hda(GDataInputStream* stream, gsize* remaining)
 {
     GVariantBuilder* builder;
-    GVariantDict* dict;
     gchar* path, *keys;
     gint32 count;
 
@@ -381,7 +379,7 @@ GVariant* weechat_decode_hda(GDataInputStream* stream, gsize* remaining)
     keys = weechat_decode_str(stream, remaining);
     count = weechat_decode_int(stream, remaining);
 
-    /* Construction of the type needs to be generic enough
+    /* Construction of the object needs to be generic enough
      *
      * [
      *   {
@@ -416,17 +414,17 @@ GVariant* weechat_decode_hda(GDataInputStream* stream, gsize* remaining)
 
     gchar** list_keys = g_strsplit(keys, ",", -1);
 
-    int i;
     g_printf("keys:\n");
-    for (i = 0; list_keys[i] != NULL; ++i) {
+    for (int i = 0; list_keys[i] != NULL; ++i) {
         gchar** name_and_type = g_strsplit(list_keys[i], ":", -1);
         g_printf("%d : '%s' of %s\n", i, name_and_type[0], name_and_type[1]);
         g_strfreev(name_and_type);
     }
 
-    g_printf("Total: %d\n", i);
-
     for (int buffer_n = 0; buffer_n < count; ++buffer_n) {
+        /* Create an empty dict */
+        GVariantDict* dict = g_variant_dict_new(NULL);
+
         g_printf("[% 3d] {\n  pointers => [", buffer_n);
         for (int p = 0; p < j; ++p) {
             gchar* pptr = weechat_decode_ptr(stream, remaining);
@@ -459,9 +457,13 @@ GVariant* weechat_decode_hda(GDataInputStream* stream, gsize* remaining)
             g_strfreev(name_and_type);
         }
         g_printf("},\n");
+
+        /* Add the dict to the builder */
+        g_variant_builder_add_value(builder, g_variant_dict_end(dict));
     }
 
-    return g_variant_dict_end(dict);
+    /* Finish the build and return the constructed object */
+    return g_variant_builder_end(builder);
 }
 
 type_t weechat_decode_type(GDataInputStream* stream, gsize* remaining)
