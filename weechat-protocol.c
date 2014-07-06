@@ -374,6 +374,7 @@ GVariant* weechat_decode_hda(GDataInputStream* stream, gsize* remaining)
     GVariantBuilder* builder;
     gchar* path, *keys;
     gint32 count;
+    gsize list_path_length = 0;
 
     path = weechat_decode_str(stream, remaining);
     keys = weechat_decode_str(stream, remaining);
@@ -407,8 +408,8 @@ GVariant* weechat_decode_hda(GDataInputStream* stream, gsize* remaining)
     gchar** list_path = g_strsplit(path, "/", -1);
 
     g_printf("path:\n");
-    int j = 0;
-    for (j = 0; list_path[j] != NULL; ++j) {
+
+    for (int j = 0; list_path[j] != NULL; ++j, ++list_path_length) {
         g_printf("%d : %s\n", j, list_path[j]);
     }
 
@@ -426,10 +427,20 @@ GVariant* weechat_decode_hda(GDataInputStream* stream, gsize* remaining)
         GVariantDict* dict = g_variant_dict_new(NULL);
 
         g_printf("[% 3d] {\n  pointers => [", buffer_n);
-        for (int p = 0; p < j; ++p) {
+
+        /* Create a builder for the pointer array */
+        GVariantBuilder* ptr_array = g_variant_builder_new(
+            g_variant_type_new_array(G_VARIANT_TYPE_STRING));
+
+        for (gsize ptr_n = 0; ptr_n < list_path_length; ++ptr_n) {
             gchar* pptr = weechat_decode_ptr(stream, remaining);
+            g_variant_builder_add(ptr_array, "s", pptr);
             g_printf("%s, ", pptr);
         }
+
+        /* Add the constructed pointer array to the dict */
+        g_variant_dict_insert_value(dict, "pointers", g_variant_builder_end(ptr_array));
+
         g_printf("],\n");
 
         for (int object_n = 0; list_keys[object_n] != NULL; ++object_n) {
