@@ -424,38 +424,34 @@ GVariant* weechat_decode_inl(GDataInputStream* stream, gsize* remaining)
     g_variant_dict_insert(inl, "name", "s", name);
     g_free(name);
 
+    /* Create a new array of dict */
     GVariantBuilder* builder = g_variant_builder_new(g_variant_type_new_array(G_VARIANT_TYPE_VARDICT));
     for (gsize n = 0; n < count; ++n) {
 
         gint32 count_n = weechat_decode_int(stream, remaining);
 
+        /* Create a new dict */
         GVariantDict* item = g_variant_dict_new(NULL);
         for (gint32 i = 0; i < count_n; ++i) {
 
             gchar* name_i = weechat_decode_str(stream, remaining);
             type_t type_i = weechat_decode_type(stream, remaining);
 
-            // FIXME: Ugly
-            if (g_strcmp0(types[type_i], "str") == 0) {
-                gchar* lol = weechat_decode_str(stream, remaining);
-                g_variant_dict_insert(item, name_i, "ms", lol);
-            } else if (g_strcmp0(types[type_i], "int") == 0) {
-                gint32 lol = weechat_decode_int(stream, remaining);
-                g_variant_dict_insert(item, name_i, "i", lol);
-            } else if (g_strcmp0(types[type_i], "chr") == 0) {
-                gchar lol = weechat_decode_chr(stream, remaining);
-                g_variant_dict_insert(item, name_i, "y", lol);
-            } else if (g_strcmp0(types[type_i], "ptr") == 0) {
-                gchar* lol = weechat_decode_ptr(stream, remaining);
-                g_variant_dict_insert(item, name_i, "s", lol);
-            } else {
-                g_critical("Type [%s] is not handled in inl\n", types[type_i]);
-            }
+            /* Decode based on the previously decoded type, allowing NULL keys */
+            GVariant* val = weechat_decode_from_arg_to_gvariant(stream, type_i, TRUE, remaining);
+
+            /* Add to dict */
+            g_variant_dict_insert_value(item, name_i, val);
 
             g_free(name_i);
         }
+        /* Append the dict to the array */
         g_variant_builder_add_value(builder, g_variant_dict_end(item));
     }
+
+    /* Add the array of dict to the root with key "objects"
+     * (see definition prototype)
+     */
     g_variant_dict_insert_value(inl, "objects", g_variant_builder_end(builder));
 
     return g_variant_dict_end(inl);
