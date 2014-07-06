@@ -372,12 +372,37 @@ GVariant* weechat_decode_htb(GDataInputStream* stream, gsize* remaining)
 // TODO: Construct the gvariant
 GVariant* weechat_decode_hda(GDataInputStream* stream, gsize* remaining)
 {
+    GVariantBuilder* builder;
+    GVariantDict* dict;
     gchar* path, *keys;
     gint32 count;
 
     path = weechat_decode_str(stream, remaining);
     keys = weechat_decode_str(stream, remaining);
     count = weechat_decode_int(stream, remaining);
+
+    /* Construction of the type needs to be generic enough
+     *
+     * [
+     *   {
+     *     pointers => [0xaaaaaa, 0xbbbbbb],
+     *     "foo"    => (int) 12345,
+     *     "bar"    => (str) "abc",
+     *     "bar"    => (chr) 'z',
+     *   },
+     *   {
+     *     pointers => [0xaaabbb, 0xbbbccc],
+     *     "foo"    => (int) 67890,
+     *     "bar"    => (str) "def",
+     *     "bar"    => (chr) 'x',
+     *   }
+     * ]
+     *
+     * In C++ it would be std::vector<std::map<std::string, void*>> with
+     * pointer always being first.
+     *
+     */
+    builder = g_variant_builder_new(g_variant_type_new_array(G_VARIANT_TYPE_VARDICT));
 
     g_printf("[%s] [%s] [%d]\n", path, keys, count);
 
@@ -435,6 +460,8 @@ GVariant* weechat_decode_hda(GDataInputStream* stream, gsize* remaining)
         }
         g_printf("},\n");
     }
+
+    return g_variant_dict_end(dict);
 }
 
 type_t weechat_decode_type(GDataInputStream* stream, gsize* remaining)
