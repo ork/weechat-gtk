@@ -560,27 +560,15 @@ GVariant* weechat_decode_hda(GDataInputStream* stream, gsize* remaining)
 
         /* For each object */
         for (int object_n = 0; list_keys[object_n] != NULL; ++object_n) {
+            /* We have a "name:type" string to split */
             gchar** name_and_type = g_strsplit(list_keys[object_n], ":", -1);
+            type_t cur_type = type_char_to_enum(name_and_type[1]);
 
-            // FIXME: Ugly
-            if (g_strcmp0(name_and_type[1], "str") == 0) {
-                gchar* lol = weechat_decode_str(stream, remaining);
+            /* We decode using the right type, allowing NULL values */
+            GVariant* val = weechat_decode_from_arg_to_gvariant(stream, cur_type, TRUE, remaining);
 
-                /* String can be empty so we use a maybe type */
-                g_variant_dict_insert(dict, name_and_type[0], "ms", lol);
-            } else if (g_strcmp0(name_and_type[1], "int") == 0) {
-                gint32 lol = weechat_decode_int(stream, remaining);
-
-                g_variant_dict_insert(dict, name_and_type[0], "i", lol);
-            } else if (g_strcmp0(name_and_type[1], "chr") == 0) {
-                gchar lol = weechat_decode_chr(stream, remaining);
-
-                /* We use a guchar with the "y" format, with maybe */
-                g_variant_dict_insert(dict, name_and_type[0], "my", lol);
-            } else {
-                g_critical("Type [%s] is not handled in hdata\n", name_and_type[1]);
-            }
-
+            /* We insert with name as the key */
+            g_variant_dict_insert_value(dict, name_and_type[0], val);
             g_strfreev(name_and_type);
         }
 
