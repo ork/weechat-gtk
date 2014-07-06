@@ -202,7 +202,7 @@ void weechat_unmarshal(GDataInputStream* stream, type_t type, gsize* remaining)
         g_printf("inf -> %s\n", g_variant_print(w_inf, TRUE));
         break;
     case INL:
-        w_inl = weechat_decode_inf(stream, remaining);
+        w_inl = weechat_decode_inl(stream, remaining);
         g_printf("inl -> %s\n", g_variant_print(w_inl, TRUE));
         break;
     case HTB:
@@ -377,13 +377,13 @@ GVariant* weechat_decode_inl(GDataInputStream* stream, gsize* remaining)
     g_variant_dict_insert(inl, "name", "s", name);
 
     GVariantBuilder* builder = g_variant_builder_new(g_variant_type_new_array(G_VARIANT_TYPE_VARDICT));
-    for (gsize i = 0; i < count; ++i) {
+    for (gsize n = 0; n < count; ++n) {
 
-        gsize count_i = weechat_decode_int(stream, remaining);
+        gint32 count_n = weechat_decode_int(stream, remaining);
         g_printf("[");
 
-        for (gsize i = 0; i < count_i; ++i) {
-            GVariantDict* item = g_variant_dict_new(NULL);
+        GVariantDict* item = g_variant_dict_new(NULL);
+        for (gint32 i = 0; i < count_n; ++i) {
 
             gchar* name_i = weechat_decode_str(stream, remaining);
             type_t type_i = weechat_decode_type(stream, remaining);
@@ -391,19 +391,21 @@ GVariant* weechat_decode_inl(GDataInputStream* stream, gsize* remaining)
             // FIXME: Ugly
             if (g_strcmp0(types[type_i], "str") == 0) {
                 gchar* lol = weechat_decode_str(stream, remaining);
-                g_variant_dict_insert(item, name_i, "s", lol);
+                g_variant_dict_insert(item, name_i, "ms", lol);
             } else if (g_strcmp0(types[type_i], "int") == 0) {
                 gint32 lol = weechat_decode_int(stream, remaining);
                 g_variant_dict_insert(item, name_i, "i", lol);
             } else if (g_strcmp0(types[type_i], "chr") == 0) {
                 gchar lol = weechat_decode_chr(stream, remaining);
                 g_variant_dict_insert(item, name_i, "y", lol);
+            } else if (g_strcmp0(types[type_i], "ptr") == 0) {
+                gchar* lol = weechat_decode_ptr(stream, remaining);
+                g_variant_dict_insert(item, name_i, "s", lol);
             } else {
                 g_critical("Type [%s] is not handled in inl\n", types[type_i]);
             }
-
-            g_variant_builder_add_value(builder, g_variant_dict_end(item));
         }
+        g_variant_builder_add_value(builder, g_variant_dict_end(item));
         g_printf("],");
     }
     g_variant_dict_insert_value(inl, "objects", g_variant_builder_end(builder));
@@ -488,7 +490,7 @@ GVariant* weechat_decode_hda(GDataInputStream* stream, gsize* remaining)
         }
 
         /* Add the constructed pointer array to the dict */
-        g_variant_dict_insert_value(dict, "pointers", g_variant_builder_end(ptr_array));
+        g_variant_dict_insert_value(dict, "__path", g_variant_builder_end(ptr_array));
 
         /* For each object */
         for (int object_n = 0; list_keys[object_n] != NULL; ++object_n) {
