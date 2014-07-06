@@ -369,7 +369,7 @@ GVariant* weechat_decode_htb(GDataInputStream* stream, gsize* remaining)
     g_printf("->dict of %d x {%s,%s}", count, type_k, type_v);
 }
 
-// WIP
+// TODO: Construct the gvariant
 GVariant* weechat_decode_hda(GDataInputStream* stream, gsize* remaining)
 {
     gchar* path, *keys;
@@ -401,18 +401,19 @@ GVariant* weechat_decode_hda(GDataInputStream* stream, gsize* remaining)
 
     g_printf("Total: %d\n", i);
 
-    for (int c = 0; c < count; ++c) {
-        g_printf("[% 3d] {\n  pointers => [", c);
+    for (int buffer_n = 0; buffer_n < count; ++buffer_n) {
+        g_printf("[% 3d] {\n  pointers => [", buffer_n);
         for (int p = 0; p < j; ++p) {
             gchar* pptr = weechat_decode_ptr(stream, remaining);
             g_printf("%s, ", pptr);
         }
         g_printf("],\n");
 
-        for (int v = 0; list_keys[v] != NULL; ++v) {
-            gchar** name_and_type = g_strsplit(list_keys[v], ":", -1);
+        for (int object_n = 0; list_keys[object_n] != NULL; ++object_n) {
+            gchar** name_and_type = g_strsplit(list_keys[object_n], ":", -1);
             g_printf("  \"%s\" => ", name_and_type[0]);
 
+            // FIXME: Ugly
             if (g_strcmp0(name_and_type[1], "str") == 0) {
                 gchar* lol = weechat_decode_str(stream, remaining);
                 g_printf("'%s'\n", lol);
