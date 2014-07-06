@@ -207,6 +207,9 @@ void weechat_unmarshal(GDataInputStream* stream, type_t type, gsize* remaining)
     case HTB:
         weechat_decode_htb(stream, remaining);
         break;
+    case HDA:
+        weechat_decode_hda(stream, remaining);
+        break;
     default:
         g_printf("Type [%s] Not implemented.\n", types[type]);
         break;
@@ -363,6 +366,18 @@ GVariant* weechat_decode_htb(GDataInputStream* stream, gsize* remaining)
     type_v = g_strdup(types[v]);
 
     g_printf("->dict of %d x {%s,%s}", count, type_k, type_v);
+}
+
+GVariant* weechat_decode_hda(GDataInputStream* stream, gsize* remaining)
+{
+    gchar *h_path, *keys;
+    gint32 count;
+
+    h_path = weechat_decode_str(stream, remaining);
+    keys = weechat_decode_str(stream, remaining);
+    count = weechat_decode_int(stream, remaining);
+
+    g_printf("[%s] [%s] [%d]\n", h_path, keys, count);
 }
 
 type_t weechat_decode_type(GDataInputStream* stream, gsize* remaining)

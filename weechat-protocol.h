@@ -68,6 +68,8 @@ GVariant* weechat_decode_inf(GDataInputStream* stream, gsize* remaining);
 
 GVariant* weechat_decode_htb(GDataInputStream* stream, gsize* remaining);
 
+GVariant* weechat_decode_hda(GDataInputStream* stream, gsize* remaining);
+
 void weechat_unmarshal(GDataInputStream* stream, type_t type, gsize* remaining);
 
 type_t weechat_decode_type(GDataInputStream* stream, gsize* remaining);
