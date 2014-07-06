@@ -25,10 +25,7 @@ int main(int argc, char* argv[])
     weechat_send(weechat, "hdata buffer:gui_buffers(*) number,full_name");
     weechat_receive(weechat);
 
-    // inl test
-    weechat_send(weechat, "infolist buffer");
-    weechat_receive(weechat);
-
+    weechat_cmd_infolist(weechat, NULL, "buffer", NULL, NULL);
     weechat_cmd_nicklist(weechat, NULL, NULL);
     weechat_cmd_quit(weechat);
 

@@ -20,9 +20,12 @@ void weechat_cmd_init(weechat_t* weechat, const gchar* password, gboolean compre
 void weechat_cmd_info(weechat_t* weechat, const gchar* id, const gchar* info);
 
 /* Request an infolist
- * 
+ *
+ * (id) infolist <name> [<pointer> [<arguments>]]
+ *
  */
-//infolist
+void weechat_cmd_infolist(weechat_t* weechat, const gchar* id,
+                          const gchar* name, const gchar* pointer, const gchar* arguments);
 
 /* Request a nicklist
  * 

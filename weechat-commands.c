@@ -33,6 +33,34 @@ void weechat_cmd_info(weechat_t* weechat, const gchar* id, const gchar* info)
     weechat_receive(weechat);
 }
 
+void weechat_cmd_infolist(weechat_t* weechat, const gchar* id,
+                          const gchar* name, const gchar* pointer, const gchar* arguments)
+{
+    g_return_if_fail(name != NULL);
+
+    GString* str = g_string_new("");
+    gchar* msg;
+
+    /* Construct */
+    if (id != NULL) {
+        g_string_append_printf(str, "(%s) ", id);
+    }
+    g_string_append_printf(str, "infolist %s", name);
+    if (pointer != NULL) {
+        g_string_append_printf(str, " %s", pointer);
+    }
+    if (arguments != NULL) {
+        g_string_append_printf(str, " %s", arguments);
+    }
+    msg = g_string_free(str, FALSE);
+
+    /* Send */
+    g_return_if_fail(weechat_send(weechat, msg));
+
+    /* Process */
+    weechat_receive(weechat);
+}
+
 void weechat_cmd_nicklist(weechat_t* weechat, const gchar* id, const gchar* buffer)
 {
     GString* str = g_string_new("");

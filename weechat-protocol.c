@@ -380,7 +380,6 @@ GVariant* weechat_decode_inl(GDataInputStream* stream, gsize* remaining)
     for (gsize n = 0; n < count; ++n) {
 
         gint32 count_n = weechat_decode_int(stream, remaining);
-        g_printf("[");
 
         GVariantDict* item = g_variant_dict_new(NULL);
         for (gint32 i = 0; i < count_n; ++i) {
@@ -406,7 +405,6 @@ GVariant* weechat_decode_inl(GDataInputStream* stream, gsize* remaining)
             }
         }
         g_variant_builder_add_value(builder, g_variant_dict_end(item));
-        g_printf("],");
     }
     g_variant_dict_insert_value(inl, "objects", g_variant_builder_end(builder));
 
