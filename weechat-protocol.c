@@ -352,6 +352,7 @@ GVariant* weechat_decode_inf(GDataInputStream* stream, gsize* remaining)
     return pair;
 }
 
+// WIP
 GVariant* weechat_decode_htb(GDataInputStream* stream, gsize* remaining)
 {
     GVariant* dict;
@@ -368,16 +369,60 @@ GVariant* weechat_decode_htb(GDataInputStream* stream, gsize* remaining)
     g_printf("->dict of %d x {%s,%s}", count, type_k, type_v);
 }
 
+// WIP
 GVariant* weechat_decode_hda(GDataInputStream* stream, gsize* remaining)
 {
-    gchar *h_path, *keys;
+    gchar* path, *keys;
     gint32 count;
 
-    h_path = weechat_decode_str(stream, remaining);
+    path = weechat_decode_str(stream, remaining);
     keys = weechat_decode_str(stream, remaining);
     count = weechat_decode_int(stream, remaining);
 
-    g_printf("[%s] [%s] [%d]\n", h_path, keys, count);
+    g_printf("[%s] [%s] [%d]\n", path, keys, count);
+
+    gchar** list_path = g_strsplit(path, "/", -1);
+
+    g_printf("path:\n");
+    int j = 0;
+    for (j = 0; list_path[j] != NULL; ++j) {
+        g_printf("%d : %s\n", j, list_path[j]);
+    }
+
+    gchar** list_keys = g_strsplit(keys, ",", -1);
+
+    int i;
+    g_printf("keys:\n");
+    for (i = 0; list_keys[i] != NULL; ++i) {
+        gchar** name_and_type = g_strsplit(list_keys[i], ":", -1);
+        g_printf("%d : '%s' of %s\n", i, name_and_type[0], name_and_type[1]);
+        g_strfreev(name_and_type);
+    }
+
+    g_printf("Total: %d\n", i);
+
+    for (int c = 0; c < count; ++c) {
+        g_printf("[% 3d] {\n  pointers => [", c);
+        for (int p = 0; p < j; ++p) {
+            gchar* pptr = weechat_decode_ptr(stream, remaining);
+            g_printf("%s, ", pptr);
+        }
+        g_printf("],\n");
+
+        for (int v = 0; list_keys[v] != NULL; ++v) {
+            gchar** name_and_type = g_strsplit(list_keys[v], ":", -1);
+            g_printf("  \"%s\" => ", name_and_type[0]);
+            if (g_strcmp0(name_and_type[1], "str") == 0) {
+                gchar* lol = weechat_decode_str(stream, remaining);
+                g_printf("'%s'\n", lol);
+            } else if (g_strcmp0(name_and_type[1], "int") == 0) {
+                gint32 lol = weechat_decode_int(stream, remaining);
+                g_printf("%d\n", lol);
+            }
+            g_strfreev(name_and_type);
+        }
+        g_printf("},\n");
+    }
 }
 
 type_t weechat_decode_type(GDataInputStream* stream, gsize* remaining)
