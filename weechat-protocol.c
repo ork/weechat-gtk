@@ -412,13 +412,18 @@ GVariant* weechat_decode_hda(GDataInputStream* stream, gsize* remaining)
         for (int v = 0; list_keys[v] != NULL; ++v) {
             gchar** name_and_type = g_strsplit(list_keys[v], ":", -1);
             g_printf("  \"%s\" => ", name_and_type[0]);
+
             if (g_strcmp0(name_and_type[1], "str") == 0) {
                 gchar* lol = weechat_decode_str(stream, remaining);
                 g_printf("'%s'\n", lol);
             } else if (g_strcmp0(name_and_type[1], "int") == 0) {
                 gint32 lol = weechat_decode_int(stream, remaining);
                 g_printf("%d\n", lol);
+            } else if (g_strcmp0(name_and_type[1], "chr") == 0) {
+                gchar lol = weechat_decode_chr(stream, remaining);
+                g_printf("%c\n", lol);
             }
+
             g_strfreev(name_and_type);
         }
         g_printf("},\n");
