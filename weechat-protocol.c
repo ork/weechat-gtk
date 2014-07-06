@@ -421,7 +421,13 @@ GVariant* weechat_decode_hda(GDataInputStream* stream, gsize* remaining)
                 g_printf("%d\n", lol);
             } else if (g_strcmp0(name_and_type[1], "chr") == 0) {
                 gchar lol = weechat_decode_chr(stream, remaining);
-                g_printf("%c\n", lol);
+                if (lol != NULL) {
+                    g_printf("%c\n", lol);
+                } else {
+                    g_printf("(null)\n");
+                }
+            } else {
+                g_critical("Type [%s] is not handled in hdata\n", name_and_type[1]);
             }
 
             g_strfreev(name_and_type);
