@@ -204,6 +204,9 @@ void weechat_unmarshal(GDataInputStream* stream, type_t type, gsize* remaining)
         w_inf_v = g_variant_dup_string(g_variant_get_child_value(w_inf, 1), NULL);
         g_printf("{'%s':'%s'}\n", w_inf_k, w_inf_v);
         break;
+    case HTB:
+        weechat_decode_htb(stream, remaining);
+        break;
     default:
         g_printf("Type [%s] Not implemented.\n", types[type]);
         break;
@@ -334,8 +337,6 @@ GVariant* weechat_decode_inf(GDataInputStream* stream, gsize* remaining)
 {
     GVariant* pair;
 
-    // FIXME: Ensure UTF-8 encoding for strings
-
     /* Key */
     gchar* key = weechat_decode_str(stream, remaining);
 
@@ -346,6 +347,22 @@ GVariant* weechat_decode_inf(GDataInputStream* stream, gsize* remaining)
     pair = g_variant_new("{ss}", key, val);
 
     return pair;
+}
+
+GVariant* weechat_decode_htb(GDataInputStream* stream, gsize* remaining)
+{
+    GVariant* dict;
+    type_t k, v;
+    gchar* type_k, *type_v;
+    gint32 count;
+
+    k = weechat_decode_type(stream, remaining);
+    v = weechat_decode_type(stream, remaining);
+    count = weechat_decode_int(stream, remaining);
+    type_k = g_strdup(types[k]);
+    type_v = g_strdup(types[v]);
+
+    g_printf("->dict of %d x {%s,%s}", count, type_k, type_v);
 }
 
 type_t weechat_decode_type(GDataInputStream* stream, gsize* remaining)
