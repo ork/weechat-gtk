@@ -66,6 +66,8 @@ GVariant* weechat_decode_arr(GDataInputStream* stream, gsize* remaining);
 
 GVariant* weechat_decode_inf(GDataInputStream* stream, gsize* remaining);
 
+GVariant* weechat_decode_inl(GDataInputStream* stream, gsize* remaining);
+
 GVariant* weechat_decode_htb(GDataInputStream* stream, gsize* remaining);
 
 GVariant* weechat_decode_hda(GDataInputStream* stream, gsize* remaining);

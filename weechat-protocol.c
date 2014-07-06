@@ -8,6 +8,19 @@ static const char* types[] = {
     "chr", "int", "lon", "str", "buf", "ptr", "tim", "htb", "hda", "inf", "inl", "arr"
 };
 
+static gchar* wtype_to_gvtype(const gchar* wtype)
+{
+    if (g_strcmp0(wtype, "int") == 0) {
+        return "i";
+    } else if (g_strcmp0(wtype, "str") == 0) {
+        return "s";
+    } else if (g_strcmp0(wtype, "chr") == 0) {
+        return "y";
+    } else if (g_strcmp0(wtype, "ptr") == 0) {
+        return "s";
+    }
+}
+
 weechat_t* weechat_create()
 {
     weechat_t* weechat = g_try_malloc0(sizeof(weechat_t));
@@ -148,6 +161,7 @@ void weechat_unmarshal(GDataInputStream* stream, type_t type, gsize* remaining)
     gchar* w_tim;
     GVariant* w_arr;
     GVariant* w_inf;
+    GVariant* w_inl;
     GVariant* w_hda;
 
     switch (type) {
@@ -187,12 +201,16 @@ void weechat_unmarshal(GDataInputStream* stream, type_t type, gsize* remaining)
         w_inf = weechat_decode_inf(stream, remaining);
         g_printf("inf -> %s\n", g_variant_print(w_inf, TRUE));
         break;
+    case INL:
+        w_inl = weechat_decode_inf(stream, remaining);
+        g_printf("inl -> %s\n", g_variant_print(w_inl, TRUE));
+        break;
     case HTB:
         weechat_decode_htb(stream, remaining);
         break;
     case HDA:
         w_hda = weechat_decode_hda(stream, remaining);
-        g_printf("%s\n", g_variant_print(w_hda, TRUE));
+        g_printf("hda -> %s\n", g_variant_print(w_hda, TRUE));
         break;
     default:
         g_printf("Type [%s] Not implemented.\n", types[type]);
@@ -336,6 +354,63 @@ GVariant* weechat_decode_inf(GDataInputStream* stream, gsize* remaining)
     return pair;
 }
 
+/*
+ * {
+ *   "name"    => "buffer/window/bar/...",
+ *   "objects" => [
+ *     {
+ *       "foo" => "abc",
+ *       "bar" => 12345
+ *     },
+ *     {
+ *       "baz" => '0xaabbcc'
+ *     }
+ *   ]
+ * }
+ */
+GVariant* weechat_decode_inl(GDataInputStream* stream, gsize* remaining)
+{
+    GVariantDict* inl = g_variant_dict_new(NULL);
+
+    gchar* name = weechat_decode_str(stream, remaining);
+    gsize count = weechat_decode_int(stream, remaining);
+    g_variant_dict_insert(inl, "name", "s", name);
+
+    GVariantBuilder* builder = g_variant_builder_new(g_variant_type_new_array(G_VARIANT_TYPE_VARDICT));
+    for (gsize i = 0; i < count; ++i) {
+
+        gsize count_i = weechat_decode_int(stream, remaining);
+        g_printf("[");
+
+        for (gsize i = 0; i < count_i; ++i) {
+            GVariantDict* item = g_variant_dict_new(NULL);
+
+            gchar* name_i = weechat_decode_str(stream, remaining);
+            type_t type_i = weechat_decode_type(stream, remaining);
+
+            // FIXME: Ugly
+            if (g_strcmp0(types[type_i], "str") == 0) {
+                gchar* lol = weechat_decode_str(stream, remaining);
+                g_variant_dict_insert(item, name_i, "s", lol);
+            } else if (g_strcmp0(types[type_i], "int") == 0) {
+                gint32 lol = weechat_decode_int(stream, remaining);
+                g_variant_dict_insert(item, name_i, "i", lol);
+            } else if (g_strcmp0(types[type_i], "chr") == 0) {
+                gchar lol = weechat_decode_chr(stream, remaining);
+                g_variant_dict_insert(item, name_i, "y", lol);
+            } else {
+                g_critical("Type [%s] is not handled in inl\n", types[type_i]);
+            }
+
+            g_variant_builder_add_value(builder, g_variant_dict_end(item));
+        }
+        g_printf("],");
+    }
+    g_variant_dict_insert_value(inl, "objects", g_variant_builder_end(builder));
+
+    return g_variant_dict_end(inl);
+}
+
 // WIP
 GVariant* weechat_decode_htb(GDataInputStream* stream, gsize* remaining)
 {
@@ -465,5 +540,5 @@ type_t weechat_decode_type(GDataInputStream* stream, gsize* remaining)
         }
     }
 
-    g_error("Unknown type\n");
+    g_error("Unknown type : [%s]\n", type);
 }
