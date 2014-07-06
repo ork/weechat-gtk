@@ -24,9 +24,46 @@ static gchar* wtype_to_gvtype(const gchar* wtype, gboolean maybe)
         g_string_append_c(gvtype, 'y');
     } else if (g_strcmp0(wtype, "ptr") == 0) {
         g_string_append_c(gvtype, 's');
+    } else {
+        g_printf("wtype_to_gvtype: type [%s] not handled\n", wtype);
     }
 
     return g_string_free(gvtype, FALSE);
+}
+
+// TODO: Test me.
+static GVariant* weechat_decode_from_arg_to_gvariant(GDataInputStream* stream,
+                                                     type_t type, gsize* remaining)
+{
+    GVariant* val;
+    gchar* s_type = g_strdup(types[type]);
+
+    if (g_strcmp0(s_type, "int") == 0) {
+        val = g_variant_new_int32(weechat_decode_int(stream, remaining));
+    } else if (g_strcmp0(s_type, "lon") == 0) {
+        val = g_variant_new_int64(weechat_decode_lon(stream, remaining));
+    } else if (g_strcmp0(s_type, "chr") == 0) {
+        val = g_variant_new_byte(weechat_decode_chr(stream, remaining));
+    } else if (g_strcmp0(s_type, "str") == 0) {
+        val = g_variant_new_take_string(weechat_decode_str(stream, remaining));
+    } else if (g_strcmp0(s_type, "ptr") == 0) {
+        val = g_variant_new_take_string(weechat_decode_ptr(stream, remaining));
+    } else if (g_strcmp0(s_type, "tim") == 0) {
+        val = g_variant_new_take_string(weechat_decode_tim(stream, remaining));
+    } else if (g_strcmp0(s_type, "arr") == 0) {
+        val = weechat_decode_arr(stream, remaining);
+    } else if (g_strcmp0(s_type, "inf") == 0) {
+        val = weechat_decode_inf(stream, remaining);
+    } else if (g_strcmp0(s_type, "inl") == 0) {
+        val = weechat_decode_inl(stream, remaining);
+    } else if (g_strcmp0(s_type, "htb") == 0) {
+        val = weechat_decode_htb(stream, remaining);
+    } else if (g_strcmp0(s_type, "hda") == 0) {
+        val = weechat_decode_hda(stream, remaining);
+    }
+
+    g_free(s_type);
+    return val;
 }
 
 weechat_t* weechat_create()
@@ -421,20 +458,33 @@ GVariant* weechat_decode_inl(GDataInputStream* stream, gsize* remaining)
     return g_variant_dict_end(inl);
 }
 
-// WIP
+// TODO: Test me.
 GVariant* weechat_decode_htb(GDataInputStream* stream, gsize* remaining)
 {
+    GVariantBuilder* builder;
     type_t k, v;
-    gchar* type_k, *type_v;
-    gint32 count;
+    gsize count;
 
     k = weechat_decode_type(stream, remaining);
     v = weechat_decode_type(stream, remaining);
     count = weechat_decode_int(stream, remaining);
-    type_k = g_strdup(types[k]);
-    type_v = g_strdup(types[v]);
 
-    g_printf("->dict of %d x {%s,%s}", count, type_k, type_v);
+    g_printf("->dict of %zu x {%s,%s}", count, types[k], types[v]);
+
+    GVariantType* entry_type = g_variant_type_new_dict_entry(
+        g_variant_type_new(wtype_to_gvtype(types[k], FALSE)),
+        g_variant_type_new(wtype_to_gvtype(types[v], FALSE)));
+
+    builder = g_variant_builder_new(g_variant_type_new_array(entry_type));
+
+    for (gsize i = 0; i < count; ++i) {
+        GVariant* key = weechat_decode_from_arg_to_gvariant(stream, k, remaining);
+        GVariant* val = weechat_decode_from_arg_to_gvariant(stream, v, remaining);
+        GVariant* entry = g_variant_new_dict_entry(key, val);
+        g_variant_builder_add_value(builder, entry);
+    }
+
+    return g_variant_builder_end(builder);
 }
 
 GVariant* weechat_decode_hda(GDataInputStream* stream, gsize* remaining)
