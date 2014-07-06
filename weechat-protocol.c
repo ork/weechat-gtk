@@ -149,6 +149,7 @@ void weechat_unmarshal(GDataInputStream* stream, type_t type, gsize* remaining)
     GVariant* w_arr;
     GVariant* w_inf;
     gchar* w_inf_k, *w_inf_v;
+    GVariant* w_hda;
 
     switch (type) {
     case CHR:
@@ -208,7 +209,8 @@ void weechat_unmarshal(GDataInputStream* stream, type_t type, gsize* remaining)
         weechat_decode_htb(stream, remaining);
         break;
     case HDA:
-        weechat_decode_hda(stream, remaining);
+        w_hda = weechat_decode_hda(stream, remaining);
+        g_printf("%s\n", g_variant_print(w_hda, TRUE));
         break;
     default:
         g_printf("Type [%s] Not implemented.\n", types[type]);
@@ -368,7 +370,6 @@ GVariant* weechat_decode_htb(GDataInputStream* stream, gsize* remaining)
     g_printf("->dict of %d x {%s,%s}", count, type_k, type_v);
 }
 
-// TODO: Construct the gvariant
 GVariant* weechat_decode_hda(GDataInputStream* stream, gsize* remaining)
 {
     GVariantBuilder* builder;
@@ -403,71 +404,56 @@ GVariant* weechat_decode_hda(GDataInputStream* stream, gsize* remaining)
      */
     builder = g_variant_builder_new(g_variant_type_new_array(G_VARIANT_TYPE_VARDICT));
 
-    g_printf("[%s] [%s] [%d]\n", path, keys, count);
-
     gchar** list_path = g_strsplit(path, "/", -1);
 
-    g_printf("path:\n");
-
-    for (int j = 0; list_path[j] != NULL; ++j, ++list_path_length) {
-        g_printf("%d : %s\n", j, list_path[j]);
+    for (int j = 0; list_path[j] != NULL; ++j) {
+        ++list_path_length;
     }
 
     gchar** list_keys = g_strsplit(keys, ",", -1);
 
-    g_printf("keys:\n");
-    for (int i = 0; list_keys[i] != NULL; ++i) {
-        gchar** name_and_type = g_strsplit(list_keys[i], ":", -1);
-        g_printf("%d : '%s' of %s\n", i, name_and_type[0], name_and_type[1]);
-        g_strfreev(name_and_type);
-    }
-
+    /* Construct and add dicts to the array */
     for (int buffer_n = 0; buffer_n < count; ++buffer_n) {
         /* Create an empty dict */
         GVariantDict* dict = g_variant_dict_new(NULL);
-
-        g_printf("[% 3d] {\n  pointers => [", buffer_n);
 
         /* Create a builder for the pointer array */
         GVariantBuilder* ptr_array = g_variant_builder_new(
             g_variant_type_new_array(G_VARIANT_TYPE_STRING));
 
+        /* Add each pointer to it */
         for (gsize ptr_n = 0; ptr_n < list_path_length; ++ptr_n) {
             gchar* pptr = weechat_decode_ptr(stream, remaining);
             g_variant_builder_add(ptr_array, "s", pptr);
-            g_printf("%s, ", pptr);
         }
 
         /* Add the constructed pointer array to the dict */
         g_variant_dict_insert_value(dict, "pointers", g_variant_builder_end(ptr_array));
 
-        g_printf("],\n");
-
+        /* For each object */
         for (int object_n = 0; list_keys[object_n] != NULL; ++object_n) {
             gchar** name_and_type = g_strsplit(list_keys[object_n], ":", -1);
-            g_printf("  \"%s\" => ", name_and_type[0]);
 
             // FIXME: Ugly
             if (g_strcmp0(name_and_type[1], "str") == 0) {
                 gchar* lol = weechat_decode_str(stream, remaining);
-                g_printf("'%s'\n", lol);
+
+                /* String can be empty so we use a maybe type */
+                g_variant_dict_insert(dict, name_and_type[0], "ms", lol);
             } else if (g_strcmp0(name_and_type[1], "int") == 0) {
                 gint32 lol = weechat_decode_int(stream, remaining);
-                g_printf("%d\n", lol);
+
+                g_variant_dict_insert(dict, name_and_type[0], "i", lol);
             } else if (g_strcmp0(name_and_type[1], "chr") == 0) {
                 gchar lol = weechat_decode_chr(stream, remaining);
-                if (lol != NULL) {
-                    g_printf("%c\n", lol);
-                } else {
-                    g_printf("(null)\n");
-                }
+
+                /* We use a guchar with the "y" format, with maybe */
+                g_variant_dict_insert(dict, name_and_type[0], "my", lol);
             } else {
                 g_critical("Type [%s] is not handled in hdata\n", name_and_type[1]);
             }
-
             g_strfreev(name_and_type);
         }
-        g_printf("},\n");
 
         /* Add the dict to the builder */
         g_variant_builder_add_value(builder, g_variant_dict_end(dict));
