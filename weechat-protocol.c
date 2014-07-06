@@ -148,7 +148,6 @@ void weechat_unmarshal(GDataInputStream* stream, type_t type, gsize* remaining)
     gchar* w_tim;
     GVariant* w_arr;
     GVariant* w_inf;
-    gchar* w_inf_k, *w_inf_v;
     GVariant* w_hda;
 
     switch (type) {
@@ -182,28 +181,11 @@ void weechat_unmarshal(GDataInputStream* stream, type_t type, gsize* remaining)
         break;
     case ARR:
         w_arr = weechat_decode_arr(stream, remaining);
-        GVariantIter* iter;
-        gpointer str;
-        const gchar* arr_gv = g_variant_type_peek_string(
-            g_variant_type_element(g_variant_get_type(w_arr)));
-
-        g_printf("arr -> of %zu x %s: [", g_variant_n_children(w_arr), arr_gv);
-        g_variant_get(w_arr, g_variant_get_type_string(w_arr), &iter);
-        while (g_variant_iter_loop(iter, arr_gv, &str)) {
-            if (g_strcmp0(arr_gv, "s") == 0) {
-                g_printf(" %s,", (gchar*)str);
-            } else if (g_strcmp0(arr_gv, "i") == 0) {
-                g_printf(" %d,", GPOINTER_TO_INT(str));
-            }
-        }
-        g_printf("]\n");
-        g_variant_iter_free(iter);
+        g_printf("arr -> %s\n", g_variant_print(w_arr, TRUE));
         break;
     case INF:
         w_inf = weechat_decode_inf(stream, remaining);
-        w_inf_k = g_variant_dup_string(g_variant_get_child_value(w_inf, 0), NULL);
-        w_inf_v = g_variant_dup_string(g_variant_get_child_value(w_inf, 1), NULL);
-        g_printf("{'%s':'%s'}\n", w_inf_k, w_inf_v);
+        g_printf("inf -> %s\n", g_variant_print(w_inf, TRUE));
         break;
     case HTB:
         weechat_decode_htb(stream, remaining);
@@ -385,17 +367,20 @@ GVariant* weechat_decode_hda(GDataInputStream* stream, gsize* remaining)
      *
      * [
      *   {
-     *     pointers => [0xaaaaaa, 0xbbbbbb],
+     *     pointers => [0xaaaaaa, 0xbbbbbb, ...],
      *     "foo"    => (int) 12345,
      *     "bar"    => (str) "abc",
-     *     "bar"    => (chr) 'z',
+     *     "baz"    => (chr) 'z',
+     *     ...
      *   },
      *   {
-     *     pointers => [0xaaabbb, 0xbbbccc],
+     *     pointers => [0xaaabbb, 0xbbbccc, ...],
      *     "foo"    => (int) 67890,
      *     "bar"    => (str) "def",
      *     "bar"    => (chr) 'x',
-     *   }
+     *     ...
+     *   },
+     *   ...
      * ]
      *
      * In C++ it would be std::vector<std::map<std::string, void*>> with
