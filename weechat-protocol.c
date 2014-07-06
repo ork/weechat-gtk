@@ -180,18 +180,22 @@ void weechat_unmarshal(GDataInputStream* stream, type_t type, gsize* remaining)
     case STR:
         w_str = weechat_decode_str(stream, remaining);
         g_printf("str-> %s\n", w_str);
+        g_free(w_str);
         break;
     case BUF:
         w_buf = weechat_decode_str(stream, remaining);
         g_printf("buf-> %s\n", w_buf);
+        g_free(w_buf);
         break;
     case PTR:
         w_ptr = weechat_decode_ptr(stream, remaining);
         g_printf("ptr-> %s\n", w_ptr);
+        g_free(w_ptr);
         break;
     case TIM:
         w_tim = weechat_decode_tim(stream, remaining);
         g_printf("tim-> %s\n", w_tim);
+        g_free(w_tim);
         break;
     case ARR:
         w_arr = weechat_decode_arr(stream, remaining);
@@ -220,25 +224,23 @@ void weechat_unmarshal(GDataInputStream* stream, type_t type, gsize* remaining)
 
 gchar* weechat_decode_str(GDataInputStream* stream, gsize* remaining)
 {
-    gint32 str_len = g_data_input_stream_read_int32(stream, NULL, NULL);
-    *remaining -= 4;
+    gint32 str_len = weechat_decode_int(stream, remaining);
 
     if (str_len == -1) {
         return NULL;
     }
 
     if (str_len == 0) {
-        return "";
+        return g_strdup("");
     }
 
     GString* msg = g_string_sized_new(str_len);
 
     for (int i = 0; i < str_len; ++i) {
-        guchar c = g_data_input_stream_read_byte(stream, NULL, NULL);
+        guchar c = weechat_decode_chr(stream, remaining);
         g_string_append_c(msg, c);
     }
 
-    *remaining -= str_len;
     return g_string_free(msg, FALSE);
 }
 
@@ -260,31 +262,27 @@ gint32 weechat_decode_int(GDataInputStream* stream, gsize* remaining)
 
 gint64 weechat_decode_lon(GDataInputStream* stream, gsize* remaining)
 {
-    gchar length = g_data_input_stream_read_byte(stream, NULL, NULL);
-    *remaining -= 1;
+    gchar length = weechat_decode_chr(stream, remaining);
 
     GString* msg = g_string_sized_new(length);
     for (int i = 0; i < length; ++i) {
-        guchar c = g_data_input_stream_read_byte(stream, NULL, NULL);
+        guchar c = weechat_decode_chr(stream, remaining);
         g_string_append_c(msg, c);
     }
     gchar* lon = g_string_free(msg, FALSE);
-    *remaining -= length;
 
     return g_ascii_strtoll(lon, NULL, 10);
 }
 
 gchar* weechat_decode_ptr(GDataInputStream* stream, gsize* remaining)
 {
-    gchar length = g_data_input_stream_read_byte(stream, NULL, NULL);
-    *remaining -= 1;
+    gchar length = weechat_decode_chr(stream, remaining);
 
     GString* msg = g_string_sized_new(length);
     for (int i = 0; i < length; ++i) {
-        guchar c = g_data_input_stream_read_byte(stream, NULL, NULL);
+        guchar c = weechat_decode_chr(stream, remaining);
         g_string_append_c(msg, c);
     }
-    *remaining -= length;
     gchar* ptr = g_string_free(msg, FALSE);
 
     return g_strdup_printf("0x%s", ptr);
@@ -292,15 +290,13 @@ gchar* weechat_decode_ptr(GDataInputStream* stream, gsize* remaining)
 
 gchar* weechat_decode_tim(GDataInputStream* stream, gsize* remaining)
 {
-    gchar length = g_data_input_stream_read_byte(stream, NULL, NULL);
-    *remaining -= 1;
+    gchar length = weechat_decode_chr(stream, remaining);
 
     GString* msg = g_string_sized_new(length);
     for (int i = 0; i < length; ++i) {
-        guchar c = g_data_input_stream_read_byte(stream, NULL, NULL);
+        guchar c = weechat_decode_chr(stream, remaining);
         g_string_append_c(msg, c);
     }
-    *remaining -= length;
 
     return g_string_free(msg, FALSE);
 }
@@ -351,6 +347,9 @@ GVariant* weechat_decode_inf(GDataInputStream* stream, gsize* remaining)
     /* K-V pair */
     pair = g_variant_new("{ss}", key, val);
 
+    g_free(key);
+    g_free(val);
+
     return pair;
 }
 
@@ -375,6 +374,7 @@ GVariant* weechat_decode_inl(GDataInputStream* stream, gsize* remaining)
     gchar* name = weechat_decode_str(stream, remaining);
     gsize count = weechat_decode_int(stream, remaining);
     g_variant_dict_insert(inl, "name", "s", name);
+    g_free(name);
 
     GVariantBuilder* builder = g_variant_builder_new(g_variant_type_new_array(G_VARIANT_TYPE_VARDICT));
     for (gsize n = 0; n < count; ++n) {
@@ -403,6 +403,8 @@ GVariant* weechat_decode_inl(GDataInputStream* stream, gsize* remaining)
             } else {
                 g_critical("Type [%s] is not handled in inl\n", types[type_i]);
             }
+
+            g_free(name_i);
         }
         g_variant_builder_add_value(builder, g_variant_dict_end(item));
     }
@@ -512,12 +514,16 @@ GVariant* weechat_decode_hda(GDataInputStream* stream, gsize* remaining)
             } else {
                 g_critical("Type [%s] is not handled in hdata\n", name_and_type[1]);
             }
+
             g_strfreev(name_and_type);
         }
 
         /* Add the dict to the builder */
         g_variant_builder_add_value(builder, g_variant_dict_end(dict));
     }
+
+    g_strfreev(list_path);
+    g_strfreev(list_keys);
 
     /* Finish the build and return the constructed object */
     return g_variant_builder_end(builder);
@@ -527,12 +533,10 @@ type_t weechat_decode_type(GDataInputStream* stream, gsize* remaining)
 {
     gchar type[4];
 
-    type[0] = g_data_input_stream_read_byte(stream, NULL, NULL);
-    type[1] = g_data_input_stream_read_byte(stream, NULL, NULL);
-    type[2] = g_data_input_stream_read_byte(stream, NULL, NULL);
+    type[0] = weechat_decode_chr(stream, remaining);
+    type[1] = weechat_decode_chr(stream, remaining);
+    type[2] = weechat_decode_chr(stream, remaining);
     type[3] = '\0';
-
-    *remaining -= 3;
 
     for (int t = CHR; t <= ARR; ++t) {
         if (g_strcmp0(type, types[t]) == 0) {

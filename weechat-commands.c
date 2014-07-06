@@ -32,6 +32,7 @@ void weechat_cmd_hdata(weechat_t* weechat, const gchar* id, const gchar* path,
 
     /* Send */
     g_return_if_fail(weechat_send(weechat, msg));
+    g_free(msg);
 
     /* Process */
     weechat_receive(weechat);
@@ -53,6 +54,7 @@ void weechat_cmd_info(weechat_t* weechat, const gchar* id, const gchar* info)
 
     /* Send */
     g_return_if_fail(weechat_send(weechat, msg));
+    g_free(msg);
 
     /* Process */
     weechat_receive(weechat);
@@ -81,6 +83,7 @@ void weechat_cmd_infolist(weechat_t* weechat, const gchar* id,
 
     /* Send */
     g_return_if_fail(weechat_send(weechat, msg));
+    g_free(msg);
 
     /* Process */
     weechat_receive(weechat);
@@ -103,6 +106,7 @@ void weechat_cmd_nicklist(weechat_t* weechat, const gchar* id, const gchar* buff
 
     /* Send */
     g_return_if_fail(weechat_send(weechat, msg));
+    g_free(msg);
 
     /* Process */
     weechat_receive(weechat);
