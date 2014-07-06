@@ -108,6 +108,17 @@ void weechat_cmd_nicklist(weechat_t* weechat, const gchar* id, const gchar* buff
     weechat_receive(weechat);
 }
 
+void weechat_cmd_input(weechat_t* weechat, const gchar* buffer,
+                       const gchar* data)
+{
+    g_return_if_fail(buffer != NULL && data != NULL);
+
+    gchar* msg = g_strdup_printf("input %s %s", buffer, data);
+
+    weechat_send(weechat, msg);
+    g_free(msg);
+}
+
 void weechat_cmd_test(weechat_t* weechat)
 {
     /* Send */

@@ -7,7 +7,8 @@
 /* Initialize connection with relay
  * 
  */
-void weechat_cmd_init(weechat_t* weechat, const gchar* password, gboolean compression);
+void weechat_cmd_init(weechat_t* weechat, const gchar* password,
+                      gboolean compression);
 
 /* Request a hdata
  *
@@ -28,17 +29,22 @@ void weechat_cmd_info(weechat_t* weechat, const gchar* id, const gchar* info);
  *
  */
 void weechat_cmd_infolist(weechat_t* weechat, const gchar* id,
-                          const gchar* name, const gchar* pointer, const gchar* arguments);
+                          const gchar* name, const gchar* pointer,
+                          const gchar* arguments);
 
 /* Request a nicklist
  * 
  */
-void weechat_cmd_nicklist(weechat_t* weechat, const gchar* id, const gchar* buffer);
+void weechat_cmd_nicklist(weechat_t* weechat, const gchar* id,
+                          const gchar* buffer);
 
 /* Send data to a buffer (text or command)
- * 
+ *
+ * input <buffer> <data>
+ *
  */
-//input
+void weechat_cmd_input(weechat_t* weechat, const gchar* buffer,
+                       const gchar* data);
 
 /* Synchronize buffer(s) (get updates for buffer(s))
  * 
