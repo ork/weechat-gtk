@@ -8,6 +8,15 @@ static const char* types[] = {
     "chr", "int", "lon", "str", "buf", "ptr", "tim", "htb", "hda", "inf", "inl", "arr"
 };
 
+static type_t type_char_to_enum(const gchar* s)
+{
+    for (int t = CHR; t <= ARR; ++t) {
+        if (g_strcmp0(s, types[t]) == 0) {
+            return t;
+        }
+    }
+}
+
 static gchar* wtype_to_gvtype(const gchar* wtype, gboolean maybe)
 {
     GString* gvtype = g_string_new("");
