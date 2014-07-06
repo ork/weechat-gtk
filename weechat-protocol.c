@@ -592,11 +592,7 @@ type_t weechat_decode_type(GDataInputStream* stream, gsize* remaining)
     type[2] = weechat_decode_chr(stream, remaining);
     type[3] = '\0';
 
-    for (int t = CHR; t <= ARR; ++t) {
-        if (g_strcmp0(type, types[t]) == 0) {
-            return t;
-        }
-    }
+    return type_char_to_enum(type);
 
     g_error("Unknown type : [%s]\n", type);
 }
