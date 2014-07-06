@@ -20,11 +20,7 @@ int main(int argc, char* argv[])
     weechat_cmd_ping(weechat, "hello");
     weechat_cmd_test(weechat);
     weechat_cmd_info(weechat, NULL, "version");
-
-    // hdata test
-    weechat_send(weechat, "hdata buffer:gui_buffers(*) number,full_name");
-    weechat_receive(weechat);
-
+    weechat_cmd_hdata(weechat, NULL, "buffer:gui_buffers(*)", "number,full_name");
     weechat_cmd_infolist(weechat, NULL, "buffer", NULL, NULL);
     weechat_cmd_nicklist(weechat, NULL, NULL);
     weechat_cmd_quit(weechat);

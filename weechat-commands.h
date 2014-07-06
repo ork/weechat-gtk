@@ -10,9 +10,12 @@
 void weechat_cmd_init(weechat_t* weechat, const gchar* password, gboolean compression);
 
 /* Request a hdata
- * 
+ *
+ * (id) hdata <path> [<keys>]
+ *
  */
-//hdata
+void weechat_cmd_hdata(weechat_t* weechat, const gchar* id, const gchar* path,
+                       const gchar* keys);
 
 /* Request an info
  * 
