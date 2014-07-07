@@ -1,8 +1,29 @@
 /* See COPYING file for license and copyright information */
 
 #include <glib.h>
+#include <gio/gio.h>
+#include <gio/gunixinputstream.h>
 #include "weechat-protocol.h"
 #include "weechat-commands.h"
+
+void repl_thread(gpointer data)
+{
+    weechat_t* weechat = data;
+
+    GDataInputStream* stdin = g_data_input_stream_new(
+        g_unix_input_stream_new(0, TRUE));
+
+    g_printf("Interactive client for weechat-glib.\n");
+
+    G_LOCK_DEFINE(m);
+    while (TRUE) {
+        gchar* in = g_data_input_stream_read_line(stdin, NULL, NULL, NULL);
+        G_LOCK(m);
+        weechat_send(weechat, in);
+        G_UNLOCK(m);
+        g_free(in);
+    }
+}
 
 int main(int argc, char* argv[])
 {
@@ -16,15 +37,11 @@ int main(int argc, char* argv[])
         return -1;
     }
 
-    weechat_cmd_init(weechat, "1234", !FALSE);
-    weechat_cmd_ping(weechat, "hello");
-    weechat_cmd_test(weechat);
-    weechat_cmd_info(weechat, NULL, "version");
-    weechat_cmd_input(weechat, "core.weechat", "/print foobar");
-    weechat_cmd_hdata(weechat, NULL, "buffer:gui_buffers(*)", "number,full_name");
-    weechat_cmd_infolist(weechat, NULL, "buffer", NULL, NULL);
-    weechat_cmd_nicklist(weechat, NULL, NULL);
-    weechat_cmd_quit(weechat);
+    g_thread_new("wc-repl", (GThreadFunc) & repl_thread, weechat);
+
+    while (TRUE) {
+        weechat_receive(weechat);
+    }
 
     return 0;
 }

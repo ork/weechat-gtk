@@ -200,7 +200,6 @@ answer_t* weechat_parse_header(weechat_t* weechat)
     if (answer == NULL) {
         return NULL;
     }
-    g_printf("\n\n-> Incoming packet\n");
 
     /* -- HEADER (5B) -- */
 
