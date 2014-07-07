@@ -156,6 +156,11 @@ void weechat_receive(weechat_t* weechat)
     GDataInputStream* mem;
 
     if (answer->compression == 1) {
+        /* TODO : answer->length corresponds to the compressed size.
+         * We should decompress all the data in a buffer, get this buffer size,
+         * then iterate over this buffer size. But it adds another memory
+         * duplication.
+         */
         mem = g_data_input_stream_new(
             g_converter_input_stream_new(
                 g_memory_input_stream_new_from_data(answer->body, remaining, NULL),
