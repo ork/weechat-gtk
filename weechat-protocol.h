@@ -34,7 +34,7 @@ struct weechat_s {
 typedef struct weechat_s weechat_t;
 
 struct answer_s {
-    guint32 length;
+    gsize length;
     gboolean compression;
     gchar* body;
 };
@@ -50,28 +50,28 @@ void weechat_receive(weechat_t* weechat);
 
 answer_t* weechat_parse_header(weechat_t* weechat);
 
-gchar* weechat_decode_str(GDataInputStream* stream, gint32* remaining);
+gchar* weechat_decode_str(GDataInputStream* stream, gsize* remaining);
 
-gchar weechat_decode_chr(GDataInputStream* stream, gint32* remaining);
+gchar weechat_decode_chr(GDataInputStream* stream, gsize* remaining);
 
-gint32 weechat_decode_int(GDataInputStream* stream, gint32* remaining);
+gint32 weechat_decode_int(GDataInputStream* stream, gsize* remaining);
 
-gint64 weechat_decode_lon(GDataInputStream* stream, gint32* remaining);
+gint64 weechat_decode_lon(GDataInputStream* stream, gsize* remaining);
 
-gchar* weechat_decode_ptr(GDataInputStream* stream, gint32* remaining);
+gchar* weechat_decode_ptr(GDataInputStream* stream, gsize* remaining);
 
-gchar* weechat_decode_tim(GDataInputStream* stream, gint32* remaining);
+gchar* weechat_decode_tim(GDataInputStream* stream, gsize* remaining);
 
-GVariant* weechat_decode_arr(GDataInputStream* stream, gint32* remaining);
+GVariant* weechat_decode_arr(GDataInputStream* stream, gsize* remaining);
 
-GVariant* weechat_decode_inf(GDataInputStream* stream, gint32* remaining);
+GVariant* weechat_decode_inf(GDataInputStream* stream, gsize* remaining);
 
-GVariant* weechat_decode_inl(GDataInputStream* stream, gint32* remaining);
+GVariant* weechat_decode_inl(GDataInputStream* stream, gsize* remaining);
 
-GVariant* weechat_decode_htb(GDataInputStream* stream, gint32* remaining);
+GVariant* weechat_decode_htb(GDataInputStream* stream, gsize* remaining);
 
-GVariant* weechat_decode_hda(GDataInputStream* stream, gint32* remaining);
+GVariant* weechat_decode_hda(GDataInputStream* stream, gsize* remaining);
 
-void weechat_unmarshal(GDataInputStream* stream, type_t type, gint32* remaining);
+void weechat_unmarshal(GDataInputStream* stream, type_t type, gsize* remaining);
 
-type_t weechat_decode_type(GDataInputStream* stream, gint32* remaining);
+type_t weechat_decode_type(GDataInputStream* stream, gsize* remaining);
