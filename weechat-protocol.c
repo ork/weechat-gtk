@@ -153,8 +153,17 @@ void weechat_receive(weechat_t* weechat)
 {
     answer_t* answer = weechat_parse_header(weechat);
     gsize remaining = answer->length - 5;
-    GDataInputStream* mem = g_data_input_stream_new(
-        g_memory_input_stream_new_from_data(answer->body, remaining, NULL));
+    GDataInputStream* mem;
+
+    if (answer->compression == 1) {
+        mem = g_data_input_stream_new(
+            g_converter_input_stream_new(
+            g_memory_input_stream_new_from_data(answer->body, remaining, NULL),
+            g_zlib_decompressor_new(G_ZLIB_COMPRESSOR_FORMAT_ZLIB)));
+    } else {
+        mem = g_data_input_stream_new(
+            g_memory_input_stream_new_from_data(answer->body, remaining, NULL));
+    }
 
     /* Identifier */
     gchar* id = weechat_decode_str(mem, &remaining);
@@ -171,6 +180,7 @@ void weechat_receive(weechat_t* weechat)
 answer_t* weechat_parse_header(weechat_t* weechat)
 {
     answer_t* answer = g_try_malloc0(sizeof(answer_t));
+    gssize body_read;
 
     if (answer == NULL) {
         return NULL;
@@ -192,35 +202,13 @@ answer_t* weechat_parse_header(weechat_t* weechat)
     /* -- BODY -- */
 
     /* Payload (Length - HEADER) */
-    gchar* butt = g_try_malloc0(answer->length - 5);
-    gssize butt_size = g_input_stream_read(weechat->stream.input, butt,
-                                           answer->length - 5, NULL, &weechat->error);
-    g_printf("Body size: %zu\n", butt_size);
+    answer->body = g_try_malloc0(answer->length - 5);
+    body_read = g_input_stream_read(weechat->stream.input, answer->body,
+                                    answer->length - 5, NULL, &weechat->error);
+    g_printf("Body size: %zu\n", body_read);
 
     if (weechat->error != NULL) {
         g_printf(weechat->error->message);
-    }
-
-    /* Directly return if not compressed */
-    if (answer->compression == FALSE) {
-        answer->body = butt;
-        return answer;
-    }
-
-    // WIP
-    /* If compressed, decompress */
-    gsize zlib_read;
-    gsize zlib_written;
-    GConverter* zlib_dec = (GConverter*)g_zlib_decompressor_new(G_ZLIB_COMPRESSOR_FORMAT_RAW);
-    answer->body = g_try_malloc0(5555);
-
-    GConverterResult zz = g_converter_convert(zlib_dec, butt, butt_size, answer->body, 5555,
-                                              G_CONVERTER_NO_FLAGS, &zlib_read, &zlib_written, &weechat->error);
-
-    g_printf("Decoding: %zu read, %zu written\n", zlib_read, zlib_written);
-
-    if (weechat->error != NULL) {
-        g_printf("%s\n", weechat->error->message);
     }
 
     return answer;
