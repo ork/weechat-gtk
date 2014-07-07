@@ -3,6 +3,13 @@ weechat-glib
 
 A library to interact with weechat's relay feature using glib and gio.
 
+Features
+--------
+
+  * High-level commands (see methods)
+  * Low-level commands (send a line)
+  * zlib decompression
+
 Types
 -----
 
@@ -11,6 +18,7 @@ Currently, the following weechat types are implemented:
   * `arr` : Array of objects
   * `chr` : Signed char
   * `hda` : Hdata content
+  * `htb` : Hastable
   * `inf` : Info
   * `inl` : Infolist content
   * `int` : Signed int
@@ -18,10 +26,6 @@ Currently, the following weechat types are implemented:
   * `ptr` : Pointer
   * `str` : String
   * `tim` : Time
-
-Work in progress:
-
-  * `htb` : Hastable
 
 Methods
 -------

@@ -16,8 +16,8 @@ int main(int argc, char* argv[])
         return -1;
     }
 
-    weechat_cmd_init(weechat, "1234", TRUE);
-    //weechat_cmd_ping(weechat, "hello");
+    weechat_cmd_init(weechat, "1234", !FALSE);
+    weechat_cmd_ping(weechat, "hello");
     weechat_cmd_test(weechat);
     weechat_cmd_info(weechat, NULL, "version");
     weechat_cmd_input(weechat, "core.weechat", "/print foobar");
