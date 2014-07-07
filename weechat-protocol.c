@@ -156,15 +156,25 @@ void weechat_receive(weechat_t* weechat)
     GDataInputStream* mem;
 
     if (answer->compression == 1) {
-        /* TODO : answer->length corresponds to the compressed size.
-         * We should decompress all the data in a buffer, get this buffer size,
-         * then iterate over this buffer size. But it adds another memory
-         * duplication.
-         */
+        /* This is bad and (really) ugly */
+
+        /* Stream used to guess size */
+        GDataInputStream* tmp = g_data_input_stream_new(
+            g_converter_input_stream_new(
+                g_memory_input_stream_new_from_data(answer->body, remaining, NULL),
+                (GConverter*)g_zlib_decompressor_new(G_ZLIB_COMPRESSOR_FORMAT_ZLIB)));
+
+        /* Get uncompressed size (read until the end) */
+        remaining = 0;
+        while (g_buffered_input_stream_read_byte((GBufferedInputStream*)tmp, NULL, NULL) != -1) {
+            ++remaining;
+        }
+
+        /* Real stream */
         mem = g_data_input_stream_new(
             g_converter_input_stream_new(
                 g_memory_input_stream_new_from_data(answer->body, remaining, NULL),
-                g_zlib_decompressor_new(G_ZLIB_COMPRESSOR_FORMAT_ZLIB)));
+                (GConverter*)g_zlib_decompressor_new(G_ZLIB_COMPRESSOR_FORMAT_ZLIB)));
     } else {
         mem = g_data_input_stream_new(
             g_memory_input_stream_new_from_data(answer->body, remaining, NULL));
@@ -210,7 +220,6 @@ answer_t* weechat_parse_header(weechat_t* weechat)
     answer->body = g_try_malloc0(answer->length - 5);
     body_read = g_input_stream_read(weechat->stream.input, answer->body,
                                     answer->length - 5, NULL, &weechat->error);
-    g_printf("Body size: %zu\n", body_read);
 
     if (weechat->error != NULL) {
         g_printf(weechat->error->message);
