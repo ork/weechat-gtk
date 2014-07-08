@@ -7,19 +7,28 @@
     <property name="can_focus">False</property>
     <property name="title" translatable="yes">Weechat</property>
     <property name="icon_name">applications-internet</property>
+    <property name="has_resize_grip">False</property>
     <child>
       <object class="GtkBox" id="layout">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <property name="orientation">vertical</property>
         <child>
-          <object class="GtkTextView" id="view">
-            <property name="width_request">500</property>
-            <property name="height_request">400</property>
+          <object class="GtkScrolledWindow" id="scroll">
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="editable">False</property>
-            <property name="wrap_mode">char</property>
+            <property name="can_focus">True</property>
+            <property name="hscrollbar_policy">never</property>
+            <property name="shadow_type">in</property>
+            <child>
+              <object class="GtkTextView" id="view">
+                <property name="width_request">500</property>
+                <property name="height_request">400</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="editable">False</property>
+                <property name="wrap_mode">char</property>
+              </object>
+            </child>
           </object>
           <packing>
             <property name="expand">True</property>
