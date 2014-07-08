@@ -9,6 +9,9 @@ Features
   * High-level commands (see methods)
   * Low-level commands (send a line)
   * zlib decompression
+  * GTK test client
+
+![screenshot](http://i.imgur.com/1igxlcf.png)
 
 Types
 -----

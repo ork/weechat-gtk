@@ -25,7 +25,13 @@ void recv_thread(gpointer data)
 
     while (TRUE) {
         answer_t* answer = weechat_receive(test->weechat);
-        gtk_text_buffer_set_text(test->ui.buffer, g_variant_print(answer->data.object, TRUE), -1);
+        GString* str = g_string_new("");
+        g_string_append_printf(str, "Length: %zu\n", answer->length);
+        g_string_append_printf(str, "Compression: %s\n", (answer->compression) ? "True" : "False");
+        g_string_append_printf(str, "ID: %s\n", answer->id);
+        g_string_append_printf(str, "%s\n", g_variant_print(answer->data.object, TRUE));
+
+        gtk_text_buffer_set_text(test->ui.buffer, g_string_free(str, FALSE), -1);
         g_free(answer);
     }
 }
