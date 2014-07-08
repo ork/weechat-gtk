@@ -331,33 +331,18 @@ GVariant* weechat_decode_arr(GDataInputStream* stream, gsize* remaining)
 {
     type_t arr_t = weechat_decode_type(stream, remaining);
     gint32 arr_l = weechat_decode_int(stream, remaining);
-    GVariantBuilder* builder;
-    GVariant* value;
-    gchar* var_at;
+    gchar* type = wtype_to_gvtype(types[arr_t], FALSE);
 
-    if (arr_t == INT) {
-        var_at = g_strdup("ai");
-    } else if (arr_t == STR) {
-        var_at = g_strdup("as");
-    } else {
-        g_critical("Type [%s] cant exist in array\n", types[arr_t]);
-        return NULL;
-    }
-    builder = g_variant_builder_new(G_VARIANT_TYPE(var_at));
+    GVariantBuilder* builder = g_variant_builder_new(g_variant_type_new_array(G_VARIANT_TYPE(type)));
 
     for (int i = 0; i < arr_l; ++i) {
-        if (arr_t == INT) {
-            gint32 arr_i = weechat_decode_int(stream, remaining);
-            g_variant_builder_add(builder, "i", arr_i);
-        } else if (arr_t == STR) {
-            gchar* arr_s = weechat_decode_str(stream, remaining);
-            g_variant_builder_add(builder, "s", arr_s);
-        }
+        GVariant* val = weechat_decode_from_arg_to_gvariant(stream, arr_t, FALSE, remaining);
+        g_variant_builder_add_value(builder, val);
     }
-    value = g_variant_new(var_at, builder);
-    g_variant_builder_unref(builder);
 
-    return value;
+    g_free(type);
+
+    return g_variant_builder_end(builder);
 }
 
 GVariant* weechat_decode_inf(GDataInputStream* stream, gsize* remaining)
