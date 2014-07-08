@@ -1,6 +1,5 @@
 /* See COPYING file for license and copyright information */
 
-#include <glib/gprintf.h>
 #include <string.h>
 #include "weechat-protocol.h"
 
@@ -167,7 +166,7 @@ error_free:
     return ret;
 }
 
-void weechat_receive(weechat_t* weechat)
+answer_t* weechat_receive(weechat_t* weechat)
 {
     answer_t* answer = weechat_parse_header(weechat);
     gsize remaining = answer->length - 5;
@@ -179,7 +178,7 @@ void weechat_receive(weechat_t* weechat)
         /* Stream used to guess size */
         GDataInputStream* tmp = g_data_input_stream_new(
             g_converter_input_stream_new(
-                g_memory_input_stream_new_from_data(answer->body, remaining, NULL),
+                g_memory_input_stream_new_from_data(answer->data.body, remaining, NULL),
                 (GConverter*)g_zlib_decompressor_new(G_ZLIB_COMPRESSOR_FORMAT_ZLIB)));
 
         /* Get uncompressed size (read until the end) */
@@ -187,28 +186,34 @@ void weechat_receive(weechat_t* weechat)
         while (g_buffered_input_stream_read_byte((GBufferedInputStream*)tmp, NULL, NULL) != -1) {
             ++remaining;
         }
-        g_printf("Payload size: %zuB (%zuB compressed)\n", remaining, answer->length - 5);
+        g_debug("Payload size: %zuB (%zuB compressed)\n", remaining, answer->length - 5);
 
         /* Real stream */
         mem = g_data_input_stream_new(
             g_converter_input_stream_new(
-                g_memory_input_stream_new_from_data(answer->body, remaining, NULL),
+                g_memory_input_stream_new_from_data(answer->data.body, remaining, NULL),
                 (GConverter*)g_zlib_decompressor_new(G_ZLIB_COMPRESSOR_FORMAT_ZLIB)));
     } else {
         mem = g_data_input_stream_new(
-            g_memory_input_stream_new_from_data(answer->body, remaining, NULL));
-        g_printf("Payload size: %zuB\n", remaining);
+            g_memory_input_stream_new_from_data(answer->data.body, remaining, NULL));
+        g_debug("Payload size: %zuB\n", remaining);
     }
 
     /* Identifier */
-    gchar* id = weechat_decode_str(mem, &remaining);
-    g_printf("Id: %s\n", id);
+    answer->id = weechat_decode_str(mem, &remaining);
 
+    GVariantBuilder* builder = g_variant_builder_new(G_VARIANT_TYPE_TUPLE);
     /* As long as there is still data */
     while (remaining > 0) {
         type_t type = weechat_decode_type(mem, &remaining);
-        weechat_unmarshal(mem, type, &remaining);
+        //weechat_unmarshal(mem, type, &remaining);
+        GVariant* item = weechat_decode_from_arg_to_gvariant(mem, type, TRUE, &remaining);
+        g_variant_builder_add_value(builder, item);
     }
+
+    answer->data.object = g_variant_builder_end(builder);
+
+    return answer;
 }
 
 answer_t* weechat_parse_header(weechat_t* weechat)
@@ -224,97 +229,23 @@ answer_t* weechat_parse_header(weechat_t* weechat)
     /* Length (4B) */
     answer->length = g_data_input_stream_read_uint32(weechat->incoming, NULL,
                                                      &weechat->error);
-    g_printf("Length: %zu\n", answer->length);
 
     /* Compression (1B) */
     answer->compression = g_data_input_stream_read_byte(weechat->incoming,
                                                         NULL, &weechat->error);
-    g_printf("Compression: %s\n", (answer->compression) ? "True" : "False");
 
     /* -- BODY -- */
 
     /* Payload (Length - HEADER) */
-    answer->body = g_try_malloc0(answer->length - 5);
-    g_input_stream_read(weechat->stream.input, answer->body,
+    answer->data.body = g_try_malloc0(answer->length - 5);
+    g_input_stream_read(weechat->stream.input, answer->data.body,
                         answer->length - 5, NULL, &weechat->error);
 
     if (weechat->error != NULL) {
-        g_printf(weechat->error->message);
+        g_error(weechat->error->message);
     }
 
     return answer;
-}
-
-void weechat_unmarshal(GDataInputStream* stream, type_t type, gsize* remaining)
-{
-    gchar w_chr;
-    gint32 w_int;
-    gint64 w_lon;
-    gchar* w_str;
-    gchar* w_buf;
-    gchar* w_ptr;
-    gchar* w_tim;
-    GVariant* w_arr;
-    GVariant* w_inf;
-    GVariant* w_inl;
-    GVariant* w_hda;
-
-    switch (type) {
-    case CHR:
-        w_chr = weechat_decode_chr(stream, remaining);
-        g_printf("chr-> %c\n", w_chr);
-        break;
-    case INT:
-        w_int = weechat_decode_int(stream, remaining);
-        g_printf("int-> %d\n", w_int);
-        break;
-    case LON:
-        w_lon = weechat_decode_lon(stream, remaining);
-        g_printf("lon-> %ld\n", w_lon);
-        break;
-    case STR:
-        w_str = weechat_decode_str(stream, remaining);
-        g_printf("str-> %s\n", w_str);
-        g_free(w_str);
-        break;
-    case BUF:
-        w_buf = weechat_decode_str(stream, remaining);
-        g_printf("buf-> %s\n", w_buf);
-        g_free(w_buf);
-        break;
-    case PTR:
-        w_ptr = weechat_decode_ptr(stream, remaining);
-        g_printf("ptr-> %s\n", w_ptr);
-        g_free(w_ptr);
-        break;
-    case TIM:
-        w_tim = weechat_decode_tim(stream, remaining);
-        g_printf("tim-> %s\n", w_tim);
-        g_free(w_tim);
-        break;
-    case ARR:
-        w_arr = weechat_decode_arr(stream, remaining);
-        g_printf("arr -> %s\n", g_variant_print(w_arr, TRUE));
-        break;
-    case INF:
-        w_inf = weechat_decode_inf(stream, remaining);
-        g_printf("inf -> %s\n", g_variant_print(w_inf, TRUE));
-        break;
-    case INL:
-        w_inl = weechat_decode_inl(stream, remaining);
-        g_printf("inl -> %s\n", g_variant_print(w_inl, TRUE));
-        break;
-    case HTB:
-        weechat_decode_htb(stream, remaining);
-        break;
-    case HDA:
-        w_hda = weechat_decode_hda(stream, remaining);
-        g_printf("hda -> %s\n", g_variant_print(w_hda, TRUE));
-        break;
-    default:
-        g_printf("Type [%s] Not implemented.\n", types[type]);
-        break;
-    }
 }
 
 gchar* weechat_decode_str(GDataInputStream* stream, gsize* remaining)

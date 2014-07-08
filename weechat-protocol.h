@@ -36,7 +36,11 @@ typedef struct weechat_s weechat_t;
 struct answer_s {
     gsize length;
     gboolean compression;
-    gchar* body;
+    gchar* id;
+    union {
+        gchar* body;
+        GVariant* object;
+    } data;
 };
 typedef struct answer_s answer_t;
 
@@ -46,7 +50,7 @@ gboolean weechat_init(weechat_t* weechat, const gchar* host_and_port, guint16 de
 
 gboolean weechat_send(weechat_t* weechat, const gchar* msg);
 
-void weechat_receive(weechat_t* weechat);
+answer_t* weechat_receive(weechat_t* weechat);
 
 answer_t* weechat_parse_header(weechat_t* weechat);
 
@@ -71,7 +75,5 @@ GVariant* weechat_decode_inl(GDataInputStream* stream, gsize* remaining);
 GVariant* weechat_decode_htb(GDataInputStream* stream, gsize* remaining);
 
 GVariant* weechat_decode_hda(GDataInputStream* stream, gsize* remaining);
-
-void weechat_unmarshal(GDataInputStream* stream, type_t type, gsize* remaining);
 
 type_t weechat_decode_type(GDataInputStream* stream, gsize* remaining);

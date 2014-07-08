@@ -1,8 +1,10 @@
 /* See COPYING file for license and copyright information */
 
 #include <glib.h>
+#include <glib/gprintf.h>
 #include <gio/gio.h>
 #include <gio/gunixinputstream.h>
+
 #include "weechat-protocol.h"
 #include "weechat-commands.h"
 
@@ -40,7 +42,13 @@ int main(int argc, char* argv[])
     g_thread_new("wc-repl", (GThreadFunc) & repl_thread, weechat);
 
     while (TRUE) {
-        weechat_receive(weechat);
+        answer_t* answer = weechat_receive(weechat);
+
+        g_printf("Length: %zu\n", answer->length);
+        g_printf("Compression: %s\n", (answer->compression) ? "True" : "False");
+        g_printf("ID: %s\n", answer->id);
+        g_printf("%s\n", g_variant_print(answer->data.object, TRUE));
+        g_free(answer);
     }
 
     return 0;
