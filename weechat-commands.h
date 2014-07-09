@@ -21,7 +21,7 @@ void weechat_cmd_hdata(weechat_t* weechat, const gchar* id, const gchar* path,
 /* Request an info
  * 
  */
-void weechat_cmd_info(weechat_t* weechat, const gchar* id, const gchar* info);
+gchar* weechat_cmd_info(weechat_t* weechat, const gchar* id, const gchar* info);
 
 /* Request an infolist
  *
