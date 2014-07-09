@@ -1,11 +1,7 @@
 /* See COPYING file for license and copyright information */
 
 #include "weechat-client.h"
-
-void setup_buffers(client_t* client)
-{
-    //(3) hdata buffer:gui_buffers(*) local_variables,notify,number,full_name,short_name,title
-}
+#include "weechat-commands.h"
 
 void recv_thread(gpointer data)
 {
@@ -82,8 +78,12 @@ gboolean client_init(client_t* client, const gchar* host_and_port,
         return FALSE;
     }
 
-    g_thread_new("wc-recv", (GThreadFunc) & recv_thread, client);
     weechat_cmd_init(client->weechat, password, TRUE);
+
+    g_info("Running Weechat version %s",
+           weechat_cmd_info(client->weechat, NULL, "version"));
+
+    g_thread_new("wc-recv", (GThreadFunc) & recv_thread, client);
 
     return TRUE;
 }
