@@ -35,6 +35,6 @@ void buffer_delete(buffer_t* buffer)
     g_free(buffer->full_name);
     g_free(buffer->short_name);
     g_free(buffer->title);
-    g_freev(buffer->pointers);
+    g_strfreev(buffer->pointers);
     g_free(buffer);
 }

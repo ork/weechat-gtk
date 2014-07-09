@@ -55,7 +55,7 @@ static gboolean client_build_ui(client_t* client)
     client->ui.window = gtk_builder_get_object(builder, "window");
     g_signal_connect(client->ui.window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
 
-    client->ui.view = gtk_builder_get_object(builder, "view");
+    client->ui.view = gtk_builder_get_object(builder, "textview");
     gtk_widget_override_font(GTK_WIDGET(client->ui.view),
                              pango_font_description_from_string("Monospace Regular 10"));
     client->ui.buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(client->ui.view));

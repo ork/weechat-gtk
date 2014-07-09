@@ -9,43 +9,84 @@
     <property name="icon_name">empathy</property>
     <property name="has_resize_grip">False</property>
     <child>
-      <object class="GtkBox" id="layout">
+      <object class="GtkNotebook" id="notebook">
         <property name="visible">True</property>
-        <property name="can_focus">False</property>
-        <property name="orientation">vertical</property>
+        <property name="can_focus">True</property>
         <child>
-          <object class="GtkScrolledWindow" id="scroll">
+          <object class="GtkBox" id="box">
             <property name="visible">True</property>
-            <property name="can_focus">True</property>
-            <property name="hscrollbar_policy">never</property>
-            <property name="shadow_type">in</property>
+            <property name="can_focus">False</property>
+            <property name="orientation">vertical</property>
             <child>
-              <object class="GtkTextView" id="view">
-                <property name="width_request">500</property>
-                <property name="height_request">400</property>
+              <object class="GtkScrolledWindow" id="scroll">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
-                <property name="editable">False</property>
-                <property name="wrap_mode">char</property>
+                <property name="shadow_type">in</property>
+                <child>
+                  <object class="GtkTextView" id="textview">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="editable">False</property>
+                    <property name="cursor_visible">False</property>
+                  </object>
+                </child>
               </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkEntry" id="entry">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="has_focus">True</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
             </child>
           </object>
+        </child>
+        <child type="tab">
+          <object class="GtkLabel" id="label1">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="label" translatable="yes">page 1</property>
+          </object>
           <packing>
-            <property name="expand">True</property>
-            <property name="fill">True</property>
-            <property name="position">0</property>
+            <property name="tab_fill">False</property>
           </packing>
         </child>
         <child>
-          <object class="GtkEntry" id="entry">
+          <placeholder/>
+        </child>
+        <child type="tab">
+          <object class="GtkLabel" id="label2">
             <property name="visible">True</property>
-            <property name="can_focus">True</property>
-            <property name="has_focus">True</property>
+            <property name="can_focus">False</property>
+            <property name="label" translatable="yes">page 2</property>
           </object>
           <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
             <property name="position">1</property>
+            <property name="tab_fill">False</property>
+          </packing>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child type="tab">
+          <object class="GtkLabel" id="label3">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="label" translatable="yes">page 3</property>
+          </object>
+          <packing>
+            <property name="position">2</property>
+            <property name="tab_fill">False</property>
           </packing>
         </child>
       </object>
