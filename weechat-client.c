@@ -2,6 +2,7 @@
 
 #include "weechat-client.h"
 #include "weechat-commands.h"
+#include "weechat-buffer.h"
 
 void recv_thread(gpointer data)
 {
@@ -65,6 +66,27 @@ static gboolean client_build_ui(client_t* client)
     return TRUE;
 }
 
+static void client_build_buffer_map(client_t* client)
+{
+    client->buffers = g_hash_table_new_full(g_str_hash, buffer_equal,
+                                            g_free, (GDestroyNotify)buffer_delete);
+
+    GVariant* remote_bufs = weechat_cmd_hdata(client->weechat, NULL, "buffer:gui_buffers(*)",
+                                              "local_variables,notify,number,full_name,short_name,title");
+    GVariantIter iter;
+    GVariant* child;
+
+    g_variant_iter_init(&iter, remote_bufs);
+    while ((child = g_variant_iter_next_value(&iter))) {
+        buffer_t* buf = buffer_create(child);
+        if (buf != NULL) {
+            g_hash_table_insert(client->buffers, buf->full_name, buf);
+        }
+        g_variant_unref(child);
+    }
+    g_variant_unref(remote_bufs);
+}
+
 gboolean client_init(client_t* client, const gchar* host_and_port,
                      guint16 default_port, const gchar* password)
 {
@@ -82,6 +104,8 @@ gboolean client_init(client_t* client, const gchar* host_and_port,
 
     g_info("Running Weechat version %s",
            weechat_cmd_info(client->weechat, NULL, "version"));
+
+    client_build_buffer_map(client);
 
     g_thread_new("wc-recv", (GThreadFunc) & recv_thread, client);
 

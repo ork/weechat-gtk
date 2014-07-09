@@ -12,8 +12,8 @@ void weechat_cmd_init(weechat_t* weechat, const gchar* password,
     g_free(msg);
 }
 
-void weechat_cmd_hdata(weechat_t* weechat, const gchar* id, const gchar* path,
-                       const gchar* keys)
+GVariant* weechat_cmd_hdata(weechat_t* weechat, const gchar* id, const gchar* path,
+                            const gchar* keys)
 {
     g_return_if_fail(path != NULL);
 
@@ -35,7 +35,8 @@ void weechat_cmd_hdata(weechat_t* weechat, const gchar* id, const gchar* path,
     g_free(msg);
 
     /* Process */
-    weechat_receive(weechat);
+    answer_t* answer = weechat_receive(weechat);
+    return g_variant_get_child_value(answer->data.object, 0);
 }
 
 gchar* weechat_cmd_info(weechat_t* weechat, const gchar* id, const gchar* info)

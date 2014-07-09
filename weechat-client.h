@@ -11,6 +11,7 @@ struct client_s {
         GObject* entry;
         GtkTextBuffer* buffer;
     } ui;
+    GHashTable* buffers;
 };
 typedef struct client_s client_t;
 

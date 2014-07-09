@@ -15,8 +15,8 @@ void weechat_cmd_init(weechat_t* weechat, const gchar* password,
  * (id) hdata <path> [<keys>]
  *
  */
-void weechat_cmd_hdata(weechat_t* weechat, const gchar* id, const gchar* path,
-                       const gchar* keys);
+GVariant* weechat_cmd_hdata(weechat_t* weechat, const gchar* id, const gchar* path,
+                            const gchar* keys);
 
 /* Request an info
  * 
