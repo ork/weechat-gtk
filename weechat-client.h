@@ -1,5 +1,7 @@
 /* See COPYING file for license and copyright information */
 
+#pragma once
+
 #include <gtk/gtk.h>
 #include "weechat-protocol.h"
 
@@ -10,6 +12,7 @@ struct client_s {
         GObject* notebook;
     } ui;
     GHashTable* buffers;
+    GHashTable* buf_ptrs;
 };
 typedef struct client_s client_t;
 

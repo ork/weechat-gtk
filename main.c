@@ -5,12 +5,12 @@
 
 int main(int argc, char* argv[])
 {
+    gtk_init(&argc, &argv);
+
     client_t* client = client_create();
     if (client == NULL) {
         return -1;
     }
-
-    gtk_init(&argc, &argv);
 
     if (client_init(client, "localhost", 1234, "1234") == FALSE) {
         g_critical("Could not initialize client.");

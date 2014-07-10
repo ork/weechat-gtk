@@ -1,9 +1,12 @@
+/* See COPYING file for license and copyright information */
+
+#pragma once
+
 #include <glib.h>
 #include <gtk/gtk.h>
 
 struct buffer_s {
     gchar** pointers;
-
     gchar* full_name;
     gchar* short_name;
     gchar* title;
@@ -13,10 +16,10 @@ struct buffer_s {
 };
 typedef struct buffer_s buffer_t;
 
-gboolean buffer_equal(gconstpointer a, gconstpointer b);
-
 buffer_t* buffer_create(GVariant* buf);
 
 void buffer_delete(buffer_t* buffer);
 
 const gchar* buffer_get_canonical_name(buffer_t* buffer);
+
+void buffer_append_text(buffer_t* buffer, const gchar* text);

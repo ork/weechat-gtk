@@ -1,10 +1,7 @@
+/* See COPYING file for license and copyright information */
+
 #include <glib/gprintf.h>
 #include "weechat-buffer.h"
-
-gboolean buffer_equal(gconstpointer a, gconstpointer b)
-{
-    return g_strcmp0(((buffer_t*)a)->full_name, ((buffer_t*)b)->full_name) == 0;
-}
 
 buffer_t* buffer_create(GVariant* buf)
 {
@@ -22,8 +19,6 @@ buffer_t* buffer_create(GVariant* buf)
     g_variant_dict_lookup(dict, "number", "i", &buffer->number);
     buffer->pointers = g_variant_dup_strv(
         g_variant_dict_lookup_value(dict, "__path", NULL), NULL);
-
-    buffer->text_buf = gtk_text_buffer_new(NULL);
 
     g_variant_dict_unref(dict);
 
@@ -46,4 +41,16 @@ const gchar* buffer_get_canonical_name(buffer_t* buffer)
     } else {
         return buffer->full_name;
     }
+}
+
+void buffer_append_text(buffer_t* buffer, const gchar* text)
+{
+    GtkTextMark* mark;
+    GtkTextIter iter;
+
+    mark = gtk_text_buffer_get_insert(buffer->text_buf);
+    gtk_text_buffer_get_iter_at_mark(buffer->text_buf, &iter, mark);
+    if (gtk_text_buffer_get_char_count(buffer->text_buf))
+        gtk_text_buffer_insert(buffer->text_buf, &iter, "\n", 1);
+    gtk_text_buffer_insert(buffer->text_buf, &iter, text, -1);
 }
