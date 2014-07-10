@@ -18,3 +18,5 @@ gboolean buffer_equal(gconstpointer a, gconstpointer b);
 buffer_t* buffer_create(GVariant* buf);
 
 void buffer_delete(buffer_t* buffer);
+
+const gchar* buffer_get_canonical_name(buffer_t* buffer);

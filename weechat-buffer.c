@@ -38,3 +38,12 @@ void buffer_delete(buffer_t* buffer)
     g_strfreev(buffer->pointers);
     g_free(buffer);
 }
+
+const gchar* buffer_get_canonical_name(buffer_t* buffer)
+{
+    if (buffer->short_name != NULL) {
+        return buffer->short_name;
+    } else {
+        return buffer->full_name;
+    }
+}

@@ -9,6 +9,7 @@ struct client_s {
         GObject* window;
         GObject* view;
         GObject* entry;
+        GObject* notebook;
         GtkTextBuffer* buffer;
     } ui;
     GHashTable* buffers;
