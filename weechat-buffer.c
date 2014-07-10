@@ -43,14 +43,18 @@ const gchar* buffer_get_canonical_name(buffer_t* buffer)
     }
 }
 
-void buffer_append_text(buffer_t* buffer, const gchar* text)
+void buffer_append_text(buffer_t* buffer, const gchar* prefix, const gchar* text)
 {
     GtkTextMark* mark;
     GtkTextIter iter;
+
+    gchar* str = g_strdup_printf("%s\t%s", prefix, text);
 
     mark = gtk_text_buffer_get_insert(buffer->text_buf);
     gtk_text_buffer_get_iter_at_mark(buffer->text_buf, &iter, mark);
     if (gtk_text_buffer_get_char_count(buffer->text_buf))
         gtk_text_buffer_insert(buffer->text_buf, &iter, "\n", 1);
-    gtk_text_buffer_insert(buffer->text_buf, &iter, text, -1);
+    gtk_text_buffer_insert(buffer->text_buf, &iter, str, -1);
+
+    g_free(str);
 }

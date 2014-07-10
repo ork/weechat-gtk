@@ -21,11 +21,13 @@ void recv_thread(gpointer data)
         g_printf("%s\n", g_string_free(str, FALSE));
 
         /* Dispatch */
+        G_LOCK(m);
         if (g_strcmp0(answer->id, "_buffer_line_added") == 0) {
-            G_LOCK(m);
             client_dispatch_buffer_line_added(client, answer->data.object);
-            G_UNLOCK(m);
+        } else if (g_strcmp0(answer->id, "_buffer_closing") == 0) {
+            client_dispatch_buffer_closing(client, answer->data.object);
         }
+        G_UNLOCK(m);
 
         g_free(answer);
     }

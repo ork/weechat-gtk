@@ -22,4 +22,4 @@ void buffer_delete(buffer_t* buffer);
 
 const gchar* buffer_get_canonical_name(buffer_t* buffer);
 
-void buffer_append_text(buffer_t* buffer, const gchar* text);
+void buffer_append_text(buffer_t* buffer, const gchar* prefix, const gchar* text);
