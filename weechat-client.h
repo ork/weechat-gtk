@@ -7,10 +7,7 @@ struct client_s {
     weechat_t* weechat;
     struct {
         GObject* window;
-        GObject* view;
-        GObject* entry;
         GObject* notebook;
-        GtkTextBuffer* buffer;
     } ui;
     GHashTable* buffers;
 };

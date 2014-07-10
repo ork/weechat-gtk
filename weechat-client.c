@@ -16,19 +16,8 @@ void recv_thread(gpointer data)
         g_string_append_printf(str, "ID: %s\n", answer->id);
         g_string_append_printf(str, "%s\n", g_variant_print(answer->data.object, TRUE));
 
-        gtk_text_buffer_set_text(client->ui.buffer, g_string_free(str, FALSE), -1);
         g_free(answer);
     }
-}
-
-static void cb_send(GtkWidget* widget, gpointer data)
-{
-    weechat_t* weechat = data;
-
-    if (gtk_entry_get_text_length(GTK_ENTRY(widget)) > 0) {
-        weechat_send(weechat, gtk_entry_get_text(GTK_ENTRY(widget)));
-    }
-    gtk_entry_set_text(GTK_ENTRY(widget), "");
 }
 
 static void cb_input(GtkWidget* widget, gpointer data)
@@ -68,14 +57,6 @@ static gboolean client_build_ui(client_t* client)
     g_signal_connect(client->ui.window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
 
     client->ui.notebook = gtk_builder_get_object(builder, "notebook");
-
-    client->ui.view = gtk_builder_get_object(builder, "textview");
-    gtk_widget_override_font(GTK_WIDGET(client->ui.view),
-                             pango_font_description_from_string("Monospace Regular 10"));
-    client->ui.buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(client->ui.view));
-
-    client->ui.entry = gtk_builder_get_object(builder, "entry");
-    g_signal_connect(client->ui.entry, "activate", G_CALLBACK(cb_send), client->weechat);
 
     return TRUE;
 }
