@@ -11,7 +11,7 @@ Features
   * zlib decompression
   * GTK test client
 
-![screenshot](http://i.imgur.com/1igxlcf.png)
+![screenshot](http://i.imgur.com/dmWbv4W.png)
 
 Types
 -----
@@ -21,7 +21,7 @@ Currently, the following weechat types are implemented:
   * `arr` : Array of objects
   * `chr` : Signed char
   * `hda` : Hdata content
-  * `htb` : Hastable
+  * `htb` : Hashtable
   * `inf` : Info
   * `inl` : Infolist content
   * `int` : Signed int
