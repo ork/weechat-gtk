@@ -18,3 +18,6 @@ void client_dispatch_buffer_line_added(client_t* client, GVariant* gv);
 
 /* A buffer has been closed */
 void client_dispatch_buffer_closing(client_t* client, GVariant* gv);
+
+/* A buffer has been opened */
+void client_dispatch_buffer_opened(client_t* client, GVariant* gv);

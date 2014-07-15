@@ -14,6 +14,10 @@ gboolean dispatcher(gpointer user_data)
         client_dispatch_buffer_line_added(client, answer->data.object);
     } else if (g_strcmp0(answer->id, "_buffer_closing") == 0) {
         client_dispatch_buffer_closing(client, answer->data.object);
+    } else if (g_strcmp0(answer->id, "_buffer_opened") == 0) {
+        client_dispatch_buffer_opened(client, answer->data.object);
+    } else {
+        g_printf("Dispatcher: '%s' not handled\n", answer->id);
     }
 
     return G_SOURCE_REMOVE;
@@ -67,4 +71,13 @@ void client_dispatch_buffer_closing(client_t* client, GVariant* gv)
     g_free(path);
 
     g_error("GTK-side of buffer deletion not implemented\n");
+}
+
+void client_dispatch_buffer_opened(client_t* client, GVariant* gv)
+{
+    GVariant* gvline = g_variant_get_child_value(
+        g_variant_get_child_value(gv, 0), 0);
+
+    client_buffer_add(client, gvline);
+    gtk_widget_show_all(GTK_WIDGET(client->ui.window));
 }
