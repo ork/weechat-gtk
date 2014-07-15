@@ -3,7 +3,7 @@
 #pragma once
 
 #include <gtk/gtk.h>
-#include "weechat-protocol.h"
+#include "../lib/weechat-protocol.h"
 
 struct client_s {
     weechat_t* weechat;

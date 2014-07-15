@@ -1,7 +1,7 @@
 /* See COPYING file for license and copyright information */
 
 #include "weechat-client.h"
-#include "weechat-commands.h"
+#include "../lib/weechat-commands.h"
 #include "weechat-buffer.h"
 #include "weechat-dispatch.h"
 

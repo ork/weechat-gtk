@@ -3,7 +3,9 @@ CC       = gcc -fdiagnostics-color=always
 
 CFLAGS   = -std=c99 -O3 -Wall -Wextra -Wpedantic -Wstrict-aliasing
 CFLAGS  += $(shell pkg-config --cflags gio-2.0 gio-unix-2.0 gtk+-3.0)
+CFLAGS  += -I./lib
 LDFLAGS  = $(shell pkg-config --libs   gio-2.0 gio-unix-2.0 gtk+-3.0)
+LDFLAGS += -l :../lib/lgweechat.so
 
 SRC      = $(wildcard *.c)
 OBJ      = $(SRC:.c=.o)
