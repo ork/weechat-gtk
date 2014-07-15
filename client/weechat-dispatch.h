@@ -10,8 +10,11 @@ struct dispatch_s {
 };
 typedef struct dispatch_s dispatch_t;
 
+/* Check identifier to dispatch function call */
 gboolean dispatcher(gpointer user_data);
 
+/* A line hash been added to a buffer */
 void client_dispatch_buffer_line_added(client_t* client, GVariant* gv);
 
+/* A buffer has been closed */
 void client_dispatch_buffer_closing(client_t* client, GVariant* gv);

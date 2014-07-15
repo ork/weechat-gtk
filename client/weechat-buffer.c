@@ -12,6 +12,7 @@ buffer_t* buffer_create(GVariant* buf)
     }
     GVariantDict* dict = g_variant_dict_new(buf);
 
+    /* Extract GVariant dict to C struct */
     g_variant_dict_lookup(dict, "full_name", "ms", &buffer->full_name);
     g_variant_dict_lookup(dict, "short_name", "ms", &buffer->short_name);
     g_variant_dict_lookup(dict, "title", "ms", &buffer->title);
@@ -50,6 +51,7 @@ void buffer_append_text(buffer_t* buffer, const gchar* prefix, const gchar* text
 
     gchar* str = g_strdup_printf("%s\t%s", prefix, text);
 
+    /* Gtk buffer magic */
     mark = gtk_text_buffer_get_insert(buffer->text_buf);
     gtk_text_buffer_get_iter_at_mark(buffer->text_buf, &iter, mark);
     if (gtk_text_buffer_get_char_count(buffer->text_buf))

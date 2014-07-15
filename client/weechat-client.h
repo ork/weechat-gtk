@@ -16,13 +16,18 @@ struct client_s {
 };
 typedef struct client_s client_t;
 
+/* Create the client */
 client_t* client_create();
 
+/* Init the client */
 gboolean client_init(client_t* client, const gchar* host_and_port,
                      guint16 default_port, const gchar* password);
 
+/* Construct the base UI */
 gboolean client_build_ui(client_t* client);
 
+/* Add a buffer and tab to the client */
 void client_buffer_add(client_t* client, GVariant* received);
 
+/* Load existing remote buffers */
 void client_load_existing_buffers(client_t* client);
