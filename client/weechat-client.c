@@ -53,10 +53,6 @@ static gboolean client_build_ui(client_t* client)
 
 static void client_build_buffer_map(client_t* client)
 {
-    client->buffers = g_hash_table_new_full(g_str_hash, g_str_equal,
-                                            g_free, (GDestroyNotify)buffer_delete);
-    client->buf_ptrs = g_hash_table_new(g_str_hash, g_str_equal);
-
     GVariant* remote_bufs = weechat_cmd_hdata(client->weechat, NULL, "buffer:gui_buffers(*)",
                                               "local_variables,notify,number,full_name,short_name,title");
     GVariantIter iter;
@@ -128,6 +124,10 @@ gboolean client_init(client_t* client, const gchar* host_and_port,
 
     g_info("Running Weechat version %s",
            weechat_cmd_info(client->weechat, NULL, "version"));
+
+    client->buffers = g_hash_table_new_full(g_str_hash, g_str_equal,
+                                            g_free, (GDestroyNotify)buffer_delete);
+    client->buf_ptrs = g_hash_table_new(g_str_hash, g_str_equal);
 
     client_build_buffer_map(client);
 
