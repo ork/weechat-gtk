@@ -12,11 +12,21 @@ void cb_focusentry(GtkWidget* widget,
     }
 }
 
-void cb_tabswitch(G_GNUC_UNUSED GtkNotebook* notebook,
+void cb_tabswitch(GtkNotebook* notebook,
                   GtkWidget* page,
                   G_GNUC_UNUSED guint page_num,
                   G_GNUC_UNUSED gpointer user_data)
 {
+    const gchar* tab_title = gtk_notebook_get_tab_label_text(notebook, page);
+
+    /* Set window title */
+    GtkWidget* toplevel = gtk_widget_get_toplevel(GTK_WIDGET(notebook));
+    if (gtk_widget_is_toplevel(toplevel)) {
+        gchar* win_title = g_strdup_printf("Weechat - %s", tab_title);
+        gtk_window_set_title(GTK_WINDOW(toplevel), win_title);
+        g_free(win_title);
+    }
+
     gtk_container_foreach(GTK_CONTAINER(page), cb_focusentry, NULL);
 }
 

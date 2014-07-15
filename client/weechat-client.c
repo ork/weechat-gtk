@@ -100,6 +100,10 @@ void client_buffer_add(client_t* client, GVariant* received)
     /* Set the widget name to the full_name to help the callback */
     gtk_widget_set_name(GTK_WIDGET(buf->ui.entry), buf->full_name);
 
+    gtk_label_set_width_chars(GTK_LABEL(buf->ui.label), 20);
+    gtk_label_set_ellipsize(GTK_LABEL(buf->ui.label), PANGO_ELLIPSIZE_END);
+    //gtk_misc_set_alignment(GTK_MISC(buf->ui.label), 1, 0);
+
     gtk_notebook_insert_page(GTK_NOTEBOOK(client->ui.notebook),
                              GTK_WIDGET(vbox), GTK_WIDGET(buf->ui.label), -1);
 }
