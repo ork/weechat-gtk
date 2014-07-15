@@ -68,11 +68,11 @@ void client_buffer_add(client_t* client, GVariant* received)
     g_hash_table_insert(client->buf_ptrs, buf->pointers[0], buf->full_name);
 
     /* Create widgets */
-    GtkWidget* label = gtk_label_new(buffer_get_canonical_name(buf));
+    buf->ui.label = gtk_label_new(buffer_get_canonical_name(buf));
     GtkWidget* vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     GtkWidget* scro = gtk_scrolled_window_new(0, 0);
     GtkWidget* tv = gtk_text_view_new();
-    GtkWidget* en = gtk_entry_new();
+    buf->ui.entry = gtk_entry_new();
 
     /* Create the text view */
     buf->text_buf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(tv));
@@ -89,19 +89,19 @@ void client_buffer_add(client_t* client, GVariant* received)
     gtk_box_pack_start(GTK_BOX(vbox), scro, TRUE, TRUE, 0);
 
     /* Create the text entry */
-    gtk_entry_set_has_frame(GTK_ENTRY(en), FALSE);
-    gtk_widget_set_can_default(en, TRUE);
-    g_object_set(en, "activates-default", TRUE, NULL);
-    g_signal_connect(en, "activate", G_CALLBACK(cb_input), client->weechat);
+    gtk_entry_set_has_frame(GTK_ENTRY(buf->ui.entry), FALSE);
+    gtk_widget_set_can_default(buf->ui.entry, TRUE);
+    g_object_set(buf->ui.entry, "activates-default", TRUE, NULL);
+    g_signal_connect(buf->ui.entry, "activate", G_CALLBACK(cb_input), client->weechat);
 
     /* Add the text entry to the vertical box */
-    gtk_box_pack_end(GTK_BOX(vbox), en, FALSE, FALSE, 0);
+    gtk_box_pack_end(GTK_BOX(vbox), buf->ui.entry, FALSE, FALSE, 0);
 
     /* Set the widget name to the full_name to help the callback */
-    gtk_widget_set_name(GTK_WIDGET(en), buf->full_name);
+    gtk_widget_set_name(GTK_WIDGET(buf->ui.entry), buf->full_name);
 
     gtk_notebook_insert_page(GTK_NOTEBOOK(client->ui.notebook),
-                             GTK_WIDGET(vbox), GTK_WIDGET(label), -1);
+                             GTK_WIDGET(vbox), GTK_WIDGET(buf->ui.label), -1);
 }
 
 void client_load_existing_buffers(client_t* client)
