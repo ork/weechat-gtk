@@ -19,6 +19,23 @@ void recv_thread(gpointer data)
     }
 }
 
+static void cb_focusentry(GtkWidget* widget,
+                          G_GNUC_UNUSED gpointer data)
+{
+    if (GTK_IS_ENTRY(widget)) {
+        gtk_widget_grab_default(widget);
+        gtk_widget_grab_focus(widget);
+    }
+}
+
+static void cb_tabswitch(G_GNUC_UNUSED GtkNotebook* notebook,
+                         GtkWidget* page,
+                         G_GNUC_UNUSED guint page_num,
+                         G_GNUC_UNUSED gpointer user_data)
+{
+    gtk_container_foreach(GTK_CONTAINER(page), cb_focusentry, NULL);
+}
+
 static void cb_input(GtkWidget* widget, gpointer data)
 {
     weechat_t* weechat = data;
@@ -56,6 +73,7 @@ static gboolean client_build_ui(client_t* client)
     g_signal_connect(client->ui.window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
 
     client->ui.notebook = gtk_builder_get_object(builder, "notebook");
+    g_signal_connect(client->ui.notebook, "switch-page", G_CALLBACK(cb_tabswitch), NULL);
 
     return TRUE;
 }
@@ -103,7 +121,8 @@ static void client_build_buffer_map(client_t* client)
 
         /* Create the text entry */
         gtk_entry_set_has_frame(GTK_ENTRY(en), FALSE);
-        gtk_widget_grab_focus(en);
+        gtk_widget_set_can_default(en, TRUE);
+        g_object_set(en, "activates-default", TRUE, NULL);
         g_signal_connect(en, "activate", G_CALLBACK(cb_input), client->weechat);
 
         /* Add the text entry to the vertical box */
