@@ -3,6 +3,22 @@
 #include "weechat-dispatch.h"
 #include "weechat-buffer.h"
 
+gboolean dispatcher(gpointer user_data)
+{
+    dispatch_t* d = user_data;
+    client_t* client = *(d->client);
+    answer_t* answer = *(d->answer);
+
+    /* Dispatch */
+    if (g_strcmp0(answer->id, "_buffer_line_added") == 0) {
+        client_dispatch_buffer_line_added(client, answer->data.object);
+    } else if (g_strcmp0(answer->id, "_buffer_closing") == 0) {
+        client_dispatch_buffer_closing(client, answer->data.object);
+    }
+
+    return G_SOURCE_REMOVE;
+}
+
 void client_dispatch_buffer_line_added(client_t* client, GVariant* gv)
 {
     gchar* message;

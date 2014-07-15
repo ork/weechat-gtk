@@ -7,29 +7,15 @@
 
 void recv_thread(gpointer data)
 {
+    dispatch_t* d = g_try_malloc0(sizeof(dispatch_t));
     client_t* client = data;
-    G_LOCK_DEFINE(m);
+    d->client = &client;
 
     while (TRUE) {
         answer_t* answer = weechat_receive(client->weechat);
-        GString* str = g_string_new("");
-        g_string_append_printf(str, "Length: %zu\n", answer->length);
-        g_string_append_printf(str, "Compression: %s\n", (answer->compression) ? "True" : "False");
-        g_string_append_printf(str, "ID: %s\n", answer->id);
-        g_string_append_printf(str, "%s\n", g_variant_print(answer->data.object, TRUE));
+        d->answer = &answer;
 
-        g_printf("%s\n", g_string_free(str, FALSE));
-
-        /* Dispatch */
-        G_LOCK(m);
-        if (g_strcmp0(answer->id, "_buffer_line_added") == 0) {
-            client_dispatch_buffer_line_added(client, answer->data.object);
-        } else if (g_strcmp0(answer->id, "_buffer_closing") == 0) {
-            client_dispatch_buffer_closing(client, answer->data.object);
-        }
-        G_UNLOCK(m);
-
-        g_free(answer);
+        g_idle_add(dispatcher, d);
     }
 }
 
