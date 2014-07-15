@@ -20,3 +20,9 @@ client_t* client_create();
 
 gboolean client_init(client_t* client, const gchar* host_and_port,
                      guint16 default_port, const gchar* password);
+
+gboolean client_build_ui(client_t* client);
+
+void client_buffer_add(client_t* client, GVariant* received);
+
+void client_load_existing_buffers(client_t* client);

@@ -37,74 +37,88 @@ client_t* client_create()
     return client;
 }
 
-static gboolean client_build_ui(client_t* client)
+gboolean client_build_ui(client_t* client)
 {
+    /* Load base layout from the Glade XML template */
     GtkBuilder* builder = gtk_builder_new();
     gtk_builder_add_from_file(builder, "window.glade", NULL);
 
     client->ui.window = gtk_builder_get_object(builder, "window");
-    g_signal_connect(client->ui.window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
+    g_signal_connect(client->ui.window, "destroy",
+                     G_CALLBACK(gtk_main_quit), NULL);
 
     client->ui.notebook = gtk_builder_get_object(builder, "notebook");
-    g_signal_connect(client->ui.notebook, "switch-page", G_CALLBACK(cb_tabswitch), NULL);
+    g_signal_connect(client->ui.notebook, "switch-page",
+                     G_CALLBACK(cb_tabswitch), NULL);
 
     return TRUE;
 }
 
-static void client_build_buffer_map(client_t* client)
+void client_buffer_add(client_t* client, GVariant* received)
 {
+    PangoFontDescription* font_desc = pango_font_description_from_string("Monospace 10");
+
+    buffer_t* buf = buffer_create(received);
+    if (buf == NULL) {
+        g_error("Could not add buffer\n");
+    }
+
+    /* Create map entries */
+    g_hash_table_insert(client->buffers, buf->full_name, buf);
+    g_hash_table_insert(client->buf_ptrs, buf->pointers[0], buf->full_name);
+
+    /* Create widgets */
+    GtkWidget* label = gtk_label_new(buffer_get_canonical_name(buf));
+    GtkWidget* vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+    GtkWidget* scro = gtk_scrolled_window_new(0, 0);
+    GtkWidget* tv = gtk_text_view_new();
+    GtkWidget* en = gtk_entry_new();
+
+    /* Create the text view */
+    buf->text_buf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(tv));
+    gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(tv), GTK_WRAP_WORD);
+    gtk_text_view_set_cursor_visible(GTK_TEXT_VIEW(tv), FALSE);
+    gtk_text_view_set_editable(GTK_TEXT_VIEW(tv), FALSE);
+    gtk_widget_override_font(tv, font_desc);
+    gtk_widget_set_can_focus(tv, FALSE);
+
+    /* Add the text view to the scrolling window */
+    gtk_container_add(GTK_CONTAINER(scro), tv);
+
+    /* Add the scrolling window to the vertical box */
+    gtk_box_pack_start(GTK_BOX(vbox), scro, TRUE, TRUE, 0);
+
+    /* Create the text entry */
+    gtk_entry_set_has_frame(GTK_ENTRY(en), FALSE);
+    gtk_widget_set_can_default(en, TRUE);
+    g_object_set(en, "activates-default", TRUE, NULL);
+    g_signal_connect(en, "activate", G_CALLBACK(cb_input), client->weechat);
+
+    /* Add the text entry to the vertical box */
+    gtk_box_pack_end(GTK_BOX(vbox), en, FALSE, FALSE, 0);
+
+    /* Set the widget name to the full_name to help the callback */
+    gtk_widget_set_name(GTK_WIDGET(en), buf->full_name);
+
+    gtk_notebook_insert_page(GTK_NOTEBOOK(client->ui.notebook),
+                             GTK_WIDGET(vbox), GTK_WIDGET(label), -1);
+}
+
+void client_load_existing_buffers(client_t* client)
+{
+    /* Request all existing buffers with useful data */
     GVariant* remote_bufs = weechat_cmd_hdata(client->weechat, NULL, "buffer:gui_buffers(*)",
                                               "local_variables,notify,number,full_name,short_name,title");
     GVariantIter iter;
     GVariant* child;
-    PangoFontDescription* font_desc = pango_font_description_from_string("Monospace 10");
 
+    /* For each buffer, load it */
     g_variant_iter_init(&iter, remote_bufs);
     while ((child = g_variant_iter_next_value(&iter))) {
-        buffer_t* buf = buffer_create(child);
-        if (buf != NULL) {
-            g_hash_table_insert(client->buffers, buf->full_name, buf);
-            g_hash_table_insert(client->buf_ptrs, buf->pointers[0], buf->full_name);
-        }
+        client_buffer_add(client, child);
         g_variant_unref(child);
-
-        GtkWidget* label = gtk_label_new(buffer_get_canonical_name(buf));
-        GtkWidget* vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-        GtkWidget* scro = gtk_scrolled_window_new(0, 0);
-        GtkWidget* tv = gtk_text_view_new();
-        GtkWidget* en = gtk_entry_new();
-
-        /* Create the text view */
-        buf->text_buf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(tv));
-        gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(tv), GTK_WRAP_WORD);
-        gtk_text_view_set_cursor_visible(GTK_TEXT_VIEW(tv), FALSE);
-        gtk_text_view_set_editable(GTK_TEXT_VIEW(tv), FALSE);
-        gtk_widget_override_font(tv, font_desc);
-        gtk_widget_set_can_focus(tv, FALSE);
-
-        /* Add the text view to the scrolling window */
-        gtk_container_add(GTK_CONTAINER(scro), tv);
-
-        /* Add the scrolling window to the vertical box */
-        gtk_box_pack_start(GTK_BOX(vbox), scro, TRUE, TRUE, 0);
-
-        /* Create the text entry */
-        gtk_entry_set_has_frame(GTK_ENTRY(en), FALSE);
-        gtk_widget_set_can_default(en, TRUE);
-        g_object_set(en, "activates-default", TRUE, NULL);
-        g_signal_connect(en, "activate", G_CALLBACK(cb_input), client->weechat);
-
-        /* Add the text entry to the vertical box */
-        gtk_box_pack_end(GTK_BOX(vbox), en, FALSE, FALSE, 0);
-
-        /* Set the widget name to the full_name to help the callback */
-        gtk_widget_set_name(GTK_WIDGET(en), buf->full_name);
-
-        gtk_notebook_insert_page(GTK_NOTEBOOK(client->ui.notebook), GTK_WIDGET(vbox), GTK_WIDGET(label), -1);
     }
     g_variant_unref(remote_bufs);
-
-    gtk_widget_show_all(GTK_WIDGET(client->ui.window));
 }
 
 gboolean client_init(client_t* client, const gchar* host_and_port,
@@ -120,19 +134,28 @@ gboolean client_init(client_t* client, const gchar* host_and_port,
         return FALSE;
     }
 
+    /* Send password to initiate the connection */
     weechat_cmd_init(client->weechat, password, TRUE);
 
     g_info("Running Weechat version %s",
            weechat_cmd_info(client->weechat, NULL, "version"));
 
-    client->buffers = g_hash_table_new_full(g_str_hash, g_str_equal,
-                                            g_free, (GDestroyNotify)buffer_delete);
+    /* Create (full_name -> buffer) map */
+    client->buffers = g_hash_table_new_full(g_str_hash, g_str_equal, g_free,
+                                            (GDestroyNotify)buffer_delete);
+    /* Create (pointer -> full_name) map */
     client->buf_ptrs = g_hash_table_new(g_str_hash, g_str_equal);
 
-    client_build_buffer_map(client);
+    /* Load already openend weechat buffers */
+    client_load_existing_buffers(client);
 
+    /* Make all widgets visible */
+    gtk_widget_show_all(GTK_WIDGET(client->ui.window));
+
+    /* Request buffer sync */
     weechat_send(client->weechat, "sync");
 
+    /* Start the reception thread */
     g_thread_new("wc-recv", (GThreadFunc) & recv_thread, client);
 
     return TRUE;
