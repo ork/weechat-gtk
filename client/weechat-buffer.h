@@ -12,6 +12,7 @@ struct buffer_s {
     gchar* title;
     gint32 notify;
     gint32 number;
+    GHashTable* local_variables;
     struct {
         GtkWidget* label;
         GtkWidget* entry;

@@ -23,6 +23,9 @@ buffer_t* buffer_create(GVariant* buf)
 
     g_variant_dict_unref(dict);
 
+    /* Create local variables hash table */
+    buffer->local_variables = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
+
     /* Create widgets */
     buffer->ui.label = gtk_label_new(buffer_get_canonical_name(buffer));
     buffer->ui.vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);

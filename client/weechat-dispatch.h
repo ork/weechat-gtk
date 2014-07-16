@@ -27,3 +27,6 @@ void client_dispatch_buffer_renamed(client_t* client, GVariant* gv);
 
 /* A buffer has been retitled */
 void client_dispatch_buffer_title_changed(client_t* client, GVariant* gv);
+
+/* A local variable has been added to a buffer */
+void client_dispatch_buffer_localvar_added(client_t* client, GVariant* gv);
