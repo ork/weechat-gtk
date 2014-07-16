@@ -16,6 +16,8 @@ struct buffer_s {
         GtkWidget* label;
         GtkWidget* entry;
         GtkWidget* textview;
+        GtkWidget* scroll;
+        GtkWidget* vbox;
         GtkTextBuffer* textbuf;
     } ui;
 };
@@ -23,6 +25,9 @@ typedef struct buffer_s buffer_t;
 
 /* Create a buffer */
 buffer_t* buffer_create(GVariant* buf);
+
+/* Init the UI of the buffer */
+void buffer_ui_init(buffer_t* buf);
 
 /* Delete a buffer */
 void buffer_delete(buffer_t* buffer);

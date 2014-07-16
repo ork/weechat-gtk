@@ -23,7 +23,48 @@ buffer_t* buffer_create(GVariant* buf)
 
     g_variant_dict_unref(dict);
 
+    /* Create widgets */
+    buffer->ui.label = gtk_label_new(buffer_get_canonical_name(buffer));
+    buffer->ui.vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+    buffer->ui.scroll = gtk_scrolled_window_new(0, 0);
+    buffer->ui.textview = gtk_text_view_new();
+    buffer->ui.entry = gtk_entry_new();
+
     return buffer;
+}
+
+void buffer_ui_init(buffer_t* buf)
+{
+    PangoFontDescription* font_desc = pango_font_description_from_string("Monospace 10");
+
+    /* Create the text view */
+    buf->ui.textbuf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(buf->ui.textview));
+    gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(buf->ui.textview), GTK_WRAP_WORD);
+    gtk_text_view_set_cursor_visible(GTK_TEXT_VIEW(buf->ui.textview), FALSE);
+    gtk_text_view_set_editable(GTK_TEXT_VIEW(buf->ui.textview), FALSE);
+    gtk_widget_override_font(buf->ui.textview, font_desc);
+    gtk_widget_set_can_focus(buf->ui.textview, FALSE);
+
+    /* Add the text view to the scrolling window */
+    gtk_container_add(GTK_CONTAINER(buf->ui.scroll), buf->ui.textview);
+
+    /* Add the scrolling window to the vertical box */
+    gtk_box_pack_start(GTK_BOX(buf->ui.vbox), buf->ui.scroll, TRUE, TRUE, 0);
+
+    /* Create the text entry */
+    gtk_entry_set_has_frame(GTK_ENTRY(buf->ui.entry), FALSE);
+    gtk_widget_set_can_default(buf->ui.entry, TRUE);
+    g_object_set(buf->ui.entry, "activates-default", TRUE, NULL);
+
+    /* Add the text entry to the vertical box */
+    gtk_box_pack_end(GTK_BOX(buf->ui.vbox), buf->ui.entry, FALSE, FALSE, 0);
+
+    /* Set the widget name to the full_name to help the callback */
+    gtk_widget_set_name(GTK_WIDGET(buf->ui.entry), buf->full_name);
+
+    gtk_label_set_width_chars(GTK_LABEL(buf->ui.label), 20);
+    gtk_label_set_ellipsize(GTK_LABEL(buf->ui.label), PANGO_ELLIPSIZE_END);
+    //gtk_misc_set_alignment(GTK_MISC(buf->ui.label), 1, 0);
 }
 
 void buffer_delete(buffer_t* buffer)

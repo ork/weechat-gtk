@@ -56,8 +56,6 @@ gboolean client_build_ui(client_t* client)
 
 void client_buffer_add(client_t* client, GVariant* received)
 {
-    PangoFontDescription* font_desc = pango_font_description_from_string("Monospace 10");
-
     buffer_t* buf = buffer_create(received);
     if (buf == NULL) {
         g_error("Could not add buffer\n");
@@ -67,45 +65,15 @@ void client_buffer_add(client_t* client, GVariant* received)
     g_hash_table_insert(client->buffers, buf->full_name, buf);
     g_hash_table_insert(client->buf_ptrs, buf->pointers[0], buf->full_name);
 
-    /* Create widgets */
-    buf->ui.label = gtk_label_new(buffer_get_canonical_name(buf));
-    GtkWidget* vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-    GtkWidget* scro = gtk_scrolled_window_new(0, 0);
-    buf->ui.textview = gtk_text_view_new();
-    buf->ui.entry = gtk_entry_new();
+    /* Init the tab UI */
+    buffer_ui_init(buf);
 
-    /* Create the text view */
-    buf->ui.textbuf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(buf->ui.textview));
-    gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(buf->ui.textview), GTK_WRAP_WORD);
-    gtk_text_view_set_cursor_visible(GTK_TEXT_VIEW(buf->ui.textview), FALSE);
-    gtk_text_view_set_editable(GTK_TEXT_VIEW(buf->ui.textview), FALSE);
-    gtk_widget_override_font(buf->ui.textview, font_desc);
-    gtk_widget_set_can_focus(buf->ui.textview, FALSE);
-
-    /* Add the text view to the scrolling window */
-    gtk_container_add(GTK_CONTAINER(scro), buf->ui.textview);
-
-    /* Add the scrolling window to the vertical box */
-    gtk_box_pack_start(GTK_BOX(vbox), scro, TRUE, TRUE, 0);
-
-    /* Create the text entry */
-    gtk_entry_set_has_frame(GTK_ENTRY(buf->ui.entry), FALSE);
-    gtk_widget_set_can_default(buf->ui.entry, TRUE);
-    g_object_set(buf->ui.entry, "activates-default", TRUE, NULL);
+    /* Connect enter key with sending action */
     g_signal_connect(buf->ui.entry, "activate", G_CALLBACK(cb_input), client->weechat);
 
-    /* Add the text entry to the vertical box */
-    gtk_box_pack_end(GTK_BOX(vbox), buf->ui.entry, FALSE, FALSE, 0);
-
-    /* Set the widget name to the full_name to help the callback */
-    gtk_widget_set_name(GTK_WIDGET(buf->ui.entry), buf->full_name);
-
-    gtk_label_set_width_chars(GTK_LABEL(buf->ui.label), 20);
-    gtk_label_set_ellipsize(GTK_LABEL(buf->ui.label), PANGO_ELLIPSIZE_END);
-    //gtk_misc_set_alignment(GTK_MISC(buf->ui.label), 1, 0);
-
+    /* Add the tab to the tab bar */
     gtk_notebook_insert_page(GTK_NOTEBOOK(client->ui.notebook),
-                             GTK_WIDGET(vbox), GTK_WIDGET(buf->ui.label), -1);
+                             GTK_WIDGET(buf->ui.vbox), GTK_WIDGET(buf->ui.label), -1);
 }
 
 void client_load_existing_buffers(client_t* client)
