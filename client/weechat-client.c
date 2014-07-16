@@ -50,8 +50,6 @@ gboolean client_build_ui(client_t* client)
     client->ui.notebook = gtk_builder_get_object(builder, "notebook");
     g_signal_connect(client->ui.notebook, "switch-page",
                      G_CALLBACK(cb_tabswitch), NULL);
-    g_signal_connect_after(client->ui.notebook, "switch-page",
-                           G_CALLBACK(cb_focusentry), NULL);
 
     return TRUE;
 }
