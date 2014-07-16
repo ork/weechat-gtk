@@ -3,13 +3,21 @@
 #include "../lib/weechat-commands.h"
 #include "weechat-callbacks.h"
 
-void cb_focusentry(GtkWidget* widget,
-                   G_GNUC_UNUSED gpointer data)
+void cb_focusentry(G_GNUC_UNUSED GtkNotebook* notebook,
+                   GtkWidget* page,
+                   G_GNUC_UNUSED guint page_num,
+                   G_GNUC_UNUSED gpointer user_data)
 {
-    if (GTK_IS_ENTRY(widget)) {
-        gtk_widget_grab_focus(widget);
-        if (gtk_widget_is_focus(widget)) {
-            g_printf("Should be focused\n");
+    GList* list = gtk_container_get_children(GTK_CONTAINER(page));
+
+    for (GList* l = list; l != NULL; l = l->next) {
+        GtkWidget* widget = l->data;
+
+        if (GTK_IS_ENTRY(widget)) {
+            gtk_widget_grab_focus(widget);
+            if (gtk_widget_is_focus(widget)) {
+                g_printf("Should be focused\n");
+            }
         }
     }
 }
@@ -28,9 +36,6 @@ void cb_tabswitch(GtkNotebook* notebook,
         gtk_window_set_title(GTK_WINDOW(toplevel), win_title);
         g_free(win_title);
     }
-
-    /* Focus entry */
-    gtk_container_foreach(GTK_CONTAINER(page), cb_focusentry, NULL);
 }
 
 void cb_input(GtkWidget* widget, gpointer data)
