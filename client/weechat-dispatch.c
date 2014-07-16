@@ -18,6 +18,8 @@ gboolean dispatcher(gpointer user_data)
         client_dispatch_buffer_opened(client, answer->data.object);
     } else if (g_strcmp0(answer->id, "_buffer_renamed") == 0) {
         client_dispatch_buffer_renamed(client, answer->data.object);
+    } else if (g_strcmp0(answer->id, "_buffer_title_changed") == 0) {
+        client_dispatch_buffer_title_changed(client, answer->data.object);
     } else {
         g_printf("Dispatcher: '%s' not handled\n", answer->id);
         g_printf("%s\n", g_variant_print(answer->data.object, TRUE));
@@ -113,4 +115,27 @@ void client_dispatch_buffer_renamed(client_t* client, GVariant* gv)
 
     g_variant_dict_unref(dict);
     g_strfreev(ptrs);
+}
+
+void client_dispatch_buffer_title_changed(client_t* client, GVariant* gv)
+{
+    /* Extract from ([]) */
+    GVariant* gvline = g_variant_get_child_value(
+        g_variant_get_child_value(gv, 0), 0);
+
+    /* Init dict parser */
+    GVariantDict* dict = g_variant_dict_new(gvline);
+
+    /* Extract the full name of the buffer */
+    gchar* full_name;
+    g_variant_dict_lookup(dict, "full_name", "ms", &full_name);
+
+    /* Retrieve the buffer */
+    buffer_t* buf = g_hash_table_lookup(client->buffers, full_name);
+
+    /* Extract new title */
+    g_variant_dict_lookup(dict, "title", "ms", &buf->title);
+
+    g_variant_dict_unref(dict);
+    g_free(full_name);
 }

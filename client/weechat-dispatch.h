@@ -24,3 +24,6 @@ void client_dispatch_buffer_opened(client_t* client, GVariant* gv);
 
 /* A buffer has been renamed */
 void client_dispatch_buffer_renamed(client_t* client, GVariant* gv);
+
+/* A buffer has been retitled */
+void client_dispatch_buffer_title_changed(client_t* client, GVariant* gv);
