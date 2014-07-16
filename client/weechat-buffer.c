@@ -52,14 +52,14 @@ void buffer_append_text(buffer_t* buffer, const gchar* prefix, const gchar* text
     gchar* str = g_strdup_printf("%s\t%s", prefix, text);
 
     /* Gtk buffer magic */
-    mark = gtk_text_buffer_get_insert(buffer->text_buf);
-    gtk_text_buffer_get_iter_at_mark(buffer->text_buf, &iter, mark);
-    if (gtk_text_buffer_get_char_count(buffer->text_buf))
-        gtk_text_buffer_insert(buffer->text_buf, &iter, "\n", 1);
-    gtk_text_buffer_insert(buffer->text_buf, &iter, str, -1);
+    mark = gtk_text_buffer_get_insert(buffer->ui.textbuf);
+    gtk_text_buffer_get_iter_at_mark(buffer->ui.textbuf, &iter, mark);
+    if (gtk_text_buffer_get_char_count(buffer->ui.textbuf))
+        gtk_text_buffer_insert(buffer->ui.textbuf, &iter, "\n", 1);
+    gtk_text_buffer_insert(buffer->ui.textbuf, &iter, str, -1);
 
     /* Scroll to the end of the text view */
-    mark = gtk_text_buffer_create_mark(buffer->text_buf, NULL, &iter, FALSE);
+    mark = gtk_text_buffer_create_mark(buffer->ui.textbuf, NULL, &iter, FALSE);
     gtk_text_view_scroll_to_mark(GTK_TEXT_VIEW(buffer->ui.textview), mark, 0, FALSE, 0, 0);
 
     g_free(str);

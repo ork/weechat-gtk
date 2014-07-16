@@ -12,11 +12,11 @@ struct buffer_s {
     gchar* title;
     gint32 notify;
     gint32 number;
-    GtkTextBuffer* text_buf;
     struct {
         GtkWidget* label;
         GtkWidget* entry;
         GtkWidget* textview;
+        GtkTextBuffer* textbuf;
     } ui;
 };
 typedef struct buffer_s buffer_t;

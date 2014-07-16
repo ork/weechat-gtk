@@ -75,7 +75,7 @@ void client_buffer_add(client_t* client, GVariant* received)
     buf->ui.entry = gtk_entry_new();
 
     /* Create the text view */
-    buf->text_buf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(buf->ui.textview));
+    buf->ui.textbuf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(buf->ui.textview));
     gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(buf->ui.textview), GTK_WRAP_WORD);
     gtk_text_view_set_cursor_visible(GTK_TEXT_VIEW(buf->ui.textview), FALSE);
     gtk_text_view_set_editable(GTK_TEXT_VIEW(buf->ui.textview), FALSE);

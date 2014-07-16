@@ -27,6 +27,7 @@ void cb_tabswitch(GtkNotebook* notebook,
         g_free(win_title);
     }
 
+    /* Focus entry */
     gtk_container_foreach(GTK_CONTAINER(page), cb_focusentry, NULL);
 }
 
