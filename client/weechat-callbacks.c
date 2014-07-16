@@ -7,8 +7,10 @@ void cb_focusentry(GtkWidget* widget,
                    G_GNUC_UNUSED gpointer data)
 {
     if (GTK_IS_ENTRY(widget)) {
-        gtk_widget_grab_default(widget);
         gtk_widget_grab_focus(widget);
+        if (gtk_widget_is_focus(widget)) {
+            g_printf("Should be focused\n");
+        }
     }
 }
 
@@ -17,7 +19,7 @@ void cb_tabswitch(GtkNotebook* notebook,
                   G_GNUC_UNUSED guint page_num,
                   G_GNUC_UNUSED gpointer user_data)
 {
-    const gchar* tab_title = gtk_notebook_get_tab_label_text(notebook, page);
+    const gchar* tab_title = gtk_widget_get_name(page);
 
     /* Set window title */
     GtkWidget* toplevel = gtk_widget_get_toplevel(GTK_WIDGET(notebook));

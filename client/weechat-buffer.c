@@ -63,6 +63,7 @@ void buffer_ui_init(buffer_t* buf)
     gtk_box_pack_end(GTK_BOX(buf->ui.vbox), buf->ui.entry, FALSE, FALSE, 0);
 
     /* Set the widget name to the full_name to help the callback */
+    gtk_widget_set_name(GTK_WIDGET(buf->ui.vbox), buf->full_name);
     gtk_widget_set_name(GTK_WIDGET(buf->ui.entry), buf->full_name);
 
     gtk_label_set_width_chars(GTK_LABEL(buf->ui.label), 20);
@@ -76,6 +77,7 @@ void buffer_delete(buffer_t* buffer)
     g_free(buffer->short_name);
     g_free(buffer->title);
     g_strfreev(buffer->pointers);
+    g_hash_table_unref(buffer->local_variables);
     g_free(buffer);
 }
 
