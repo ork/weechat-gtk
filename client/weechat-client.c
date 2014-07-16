@@ -71,19 +71,19 @@ void client_buffer_add(client_t* client, GVariant* received)
     buf->ui.label = gtk_label_new(buffer_get_canonical_name(buf));
     GtkWidget* vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     GtkWidget* scro = gtk_scrolled_window_new(0, 0);
-    GtkWidget* tv = gtk_text_view_new();
+    buf->ui.textview = gtk_text_view_new();
     buf->ui.entry = gtk_entry_new();
 
     /* Create the text view */
-    buf->text_buf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(tv));
-    gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(tv), GTK_WRAP_WORD);
-    gtk_text_view_set_cursor_visible(GTK_TEXT_VIEW(tv), FALSE);
-    gtk_text_view_set_editable(GTK_TEXT_VIEW(tv), FALSE);
-    gtk_widget_override_font(tv, font_desc);
-    gtk_widget_set_can_focus(tv, FALSE);
+    buf->text_buf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(buf->ui.textview));
+    gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(buf->ui.textview), GTK_WRAP_WORD);
+    gtk_text_view_set_cursor_visible(GTK_TEXT_VIEW(buf->ui.textview), FALSE);
+    gtk_text_view_set_editable(GTK_TEXT_VIEW(buf->ui.textview), FALSE);
+    gtk_widget_override_font(buf->ui.textview, font_desc);
+    gtk_widget_set_can_focus(buf->ui.textview, FALSE);
 
     /* Add the text view to the scrolling window */
-    gtk_container_add(GTK_CONTAINER(scro), tv);
+    gtk_container_add(GTK_CONTAINER(scro), buf->ui.textview);
 
     /* Add the scrolling window to the vertical box */
     gtk_box_pack_start(GTK_BOX(vbox), scro, TRUE, TRUE, 0);

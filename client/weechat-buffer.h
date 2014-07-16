@@ -16,6 +16,7 @@ struct buffer_s {
     struct {
         GtkWidget* label;
         GtkWidget* entry;
+        GtkWidget* textview;
     } ui;
 };
 typedef struct buffer_s buffer_t;

@@ -58,5 +58,9 @@ void buffer_append_text(buffer_t* buffer, const gchar* prefix, const gchar* text
         gtk_text_buffer_insert(buffer->text_buf, &iter, "\n", 1);
     gtk_text_buffer_insert(buffer->text_buf, &iter, str, -1);
 
+    /* Scroll to the end of the text view */
+    mark = gtk_text_buffer_create_mark(buffer->text_buf, NULL, &iter, FALSE);
+    gtk_text_view_scroll_to_mark(GTK_TEXT_VIEW(buffer->ui.textview), mark, 0, FALSE, 0, 0);
+
     g_free(str);
 }
