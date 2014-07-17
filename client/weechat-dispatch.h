@@ -33,3 +33,6 @@ void client_dispatch_buffer_localvar_added(client_t* client, GVariant* gv);
 
 /* A local variable has been removed to a buffer */
 void client_dispatch_buffer_localvar_removed(client_t* client, GVariant* gv);
+
+/* A nicklist has been modified in a buffer */
+void client_dispatch_nicklist(client_t* client, GVariant* gv);

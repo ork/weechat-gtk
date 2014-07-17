@@ -24,6 +24,8 @@ gboolean dispatcher(gpointer user_data)
         client_dispatch_buffer_localvar_added(client, answer->data.object);
     } else if (g_strcmp0(answer->id, "_buffer_localvar_removed") == 0) {
         client_dispatch_buffer_localvar_removed(client, answer->data.object);
+    } else if (g_strcmp0(answer->id, "_nicklist") == 0) {
+        client_dispatch_nicklist(client, answer->data.object);
     } else {
         g_printf("Dispatcher: '%s' not handled\n", answer->id);
         g_printf("%s\n", g_variant_print(answer->data.object, TRUE));
@@ -209,4 +211,19 @@ void client_dispatch_buffer_localvar_removed(client_t* client, GVariant* gv)
 
     g_variant_dict_unref(dict);
     g_free(full_name);
+}
+
+void client_dispatch_nicklist(client_t* client, GVariant* gv)
+{
+    /* Extract from () */
+    GVariant* gvline = g_variant_get_child_value(gv, 0);
+
+    GVariantIter iter;
+    GVariant* child;
+    g_variant_iter_init(&iter, gvline);
+    while ((child = g_variant_iter_next_value(&iter))) {
+        g_printf("%s\n\n", g_variant_print(child, TRUE));
+
+        g_variant_unref(child);
+    }
 }
