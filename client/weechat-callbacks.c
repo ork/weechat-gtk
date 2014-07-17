@@ -18,6 +18,10 @@ void cb_tabswitch(GtkNotebook* notebook,
         g_free(win_title);
     }
 
+    /* Remove hilight */
+    GtkWidget* label = gtk_notebook_get_tab_label(notebook, page);
+    gtk_widget_override_color(label, GTK_STATE_FLAG_NORMAL, NULL);
+
     /* Grab keyboard focus on entry */
     GList* list = gtk_container_get_children(GTK_CONTAINER(page));
     for (GList* l = list; l != NULL; l = l->next) {

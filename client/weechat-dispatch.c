@@ -52,6 +52,14 @@ void client_dispatch_buffer_line_added(client_t* client, GVariant* gv)
 
     buffer_append_text(buf, prefix, message);
 
+    /* Hilight tab */
+    GdkRGBA red = { 1.0, 0.0, 0.0, 1.0 };
+    gint cur = gtk_notebook_get_current_page(GTK_NOTEBOOK(client->ui.notebook));
+    gint added = gtk_notebook_page_num(GTK_NOTEBOOK(client->ui.notebook), buf->ui.vbox);
+    if (cur != added) {
+        gtk_widget_override_color(buf->ui.label, GTK_STATE_FLAG_NORMAL, &red);
+    }
+
     g_free(message);
     g_free(prefix);
     g_free(buf_ptr);
