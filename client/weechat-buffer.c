@@ -27,6 +27,8 @@ buffer_t* buffer_create(GVariant* buf)
     buffer->local_variables = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
 
     /* Create widgets */
+    buffer->ui.tab_layout = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+    buffer->ui.tab_title = gtk_label_new(buffer->title);
     buffer->ui.label = gtk_label_new(buffer_get_canonical_name(buffer));
     buffer->ui.vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     buffer->ui.scroll = gtk_scrolled_window_new(0, 0);
@@ -40,6 +42,9 @@ void buffer_ui_init(buffer_t* buf)
 {
     PangoFontDescription* font_desc = pango_font_description_from_string("Monospace 10");
 
+    /* Add the tab title */
+    gtk_container_add(GTK_CONTAINER(buf->ui.tab_layout), buf->ui.tab_title);
+
     /* Create the text view */
     buf->ui.textbuf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(buf->ui.textview));
     gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(buf->ui.textview), GTK_WRAP_WORD);
@@ -51,19 +56,20 @@ void buffer_ui_init(buffer_t* buf)
     /* Add the text view to the scrolling window */
     gtk_container_add(GTK_CONTAINER(buf->ui.scroll), buf->ui.textview);
 
-    /* Add the scrolling window to the vertical box */
-    gtk_box_pack_start(GTK_BOX(buf->ui.vbox), buf->ui.scroll, TRUE, TRUE, 0);
+    /* Add the scrolling window to the tab layout */
+    gtk_container_add_with_properties(GTK_CONTAINER(buf->ui.tab_layout), buf->ui.scroll,
+                                      "expand", TRUE, "fill", TRUE, NULL);
 
     /* Create the text entry */
     gtk_entry_set_has_frame(GTK_ENTRY(buf->ui.entry), FALSE);
     gtk_widget_set_can_default(buf->ui.entry, TRUE);
     g_object_set(buf->ui.entry, "activates-default", TRUE, NULL);
 
-    /* Add the text entry to the vertical box */
-    gtk_box_pack_end(GTK_BOX(buf->ui.vbox), buf->ui.entry, FALSE, FALSE, 0);
+    /* Add the text entry to the tab layout */
+    gtk_container_add(GTK_CONTAINER(buf->ui.tab_layout), buf->ui.entry);
 
     /* Set the widget name to the full_name to help the callback */
-    gtk_widget_set_name(GTK_WIDGET(buf->ui.vbox), buf->full_name);
+    gtk_widget_set_name(GTK_WIDGET(buf->ui.tab_layout), buf->full_name);
     gtk_widget_set_name(GTK_WIDGET(buf->ui.entry), buf->full_name);
 
     gtk_label_set_width_chars(GTK_LABEL(buf->ui.label), 20);

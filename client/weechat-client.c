@@ -73,7 +73,7 @@ void client_buffer_add(client_t* client, GVariant* received)
 
     /* Add the tab to the tab bar */
     gtk_notebook_insert_page(GTK_NOTEBOOK(client->ui.notebook),
-                             GTK_WIDGET(buf->ui.vbox), GTK_WIDGET(buf->ui.label), -1);
+                             GTK_WIDGET(buf->ui.tab_layout), GTK_WIDGET(buf->ui.label), -1);
 }
 
 void client_load_existing_buffers(client_t* client)

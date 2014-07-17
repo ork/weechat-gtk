@@ -14,6 +14,8 @@ struct buffer_s {
     gint32 number;
     GHashTable* local_variables;
     struct {
+        GtkWidget* tab_layout;
+        GtkWidget* tab_title;
         GtkWidget* label;
         GtkWidget* entry;
         GtkWidget* textview;
