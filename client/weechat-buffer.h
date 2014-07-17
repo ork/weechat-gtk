@@ -14,13 +14,16 @@ struct buffer_s {
     gint32 number;
     GHashTable* local_variables;
     struct {
+        GtkWidget* label;
         GtkWidget* tab_layout;
         GtkWidget* tab_title;
-        GtkWidget* label;
+        GtkWidget* log_and_nick;
+        GtkWidget* log_scroll;
+        GtkWidget* log_view;
+        GtkWidget* sep;
+        GtkWidget* nick_scroll;
+        GtkWidget* nick_list;
         GtkWidget* entry;
-        GtkWidget* textview;
-        GtkWidget* scroll;
-        GtkWidget* vbox;
         GtkTextBuffer* textbuf;
     } ui;
 };

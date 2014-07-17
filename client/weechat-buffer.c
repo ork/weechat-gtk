@@ -30,9 +30,12 @@ buffer_t* buffer_create(GVariant* buf)
     buffer->ui.tab_layout = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     buffer->ui.tab_title = gtk_label_new(buffer->title);
     buffer->ui.label = gtk_label_new(buffer_get_canonical_name(buffer));
-    buffer->ui.vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-    buffer->ui.scroll = gtk_scrolled_window_new(0, 0);
-    buffer->ui.textview = gtk_text_view_new();
+    buffer->ui.log_and_nick = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+    buffer->ui.log_scroll = gtk_scrolled_window_new(0, 0);
+    buffer->ui.log_view = gtk_text_view_new();
+    buffer->ui.sep = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
+    buffer->ui.nick_scroll = gtk_scrolled_window_new(0, 0);
+    buffer->ui.nick_list = gtk_text_view_new();
     buffer->ui.entry = gtk_entry_new();
 
     return buffer;
@@ -45,19 +48,34 @@ void buffer_ui_init(buffer_t* buf)
     /* Add the tab title */
     gtk_container_add(GTK_CONTAINER(buf->ui.tab_layout), buf->ui.tab_title);
 
-    /* Create the text view */
-    buf->ui.textbuf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(buf->ui.textview));
-    gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(buf->ui.textview), GTK_WRAP_WORD);
-    gtk_text_view_set_cursor_visible(GTK_TEXT_VIEW(buf->ui.textview), FALSE);
-    gtk_text_view_set_editable(GTK_TEXT_VIEW(buf->ui.textview), FALSE);
-    gtk_widget_override_font(buf->ui.textview, font_desc);
-    gtk_widget_set_can_focus(buf->ui.textview, FALSE);
+    /* Create the log view */
+    buf->ui.textbuf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(buf->ui.log_view));
+    gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(buf->ui.log_view), GTK_WRAP_WORD);
+    gtk_text_view_set_cursor_visible(GTK_TEXT_VIEW(buf->ui.log_view), FALSE);
+    gtk_text_view_set_editable(GTK_TEXT_VIEW(buf->ui.log_view), FALSE);
+    gtk_widget_override_font(buf->ui.log_view, font_desc);
+    gtk_widget_set_can_focus(buf->ui.log_view, FALSE);
 
-    /* Add the text view to the scrolling window */
-    gtk_container_add(GTK_CONTAINER(buf->ui.scroll), buf->ui.textview);
+    /* Add the log view to the log scrolling window */
+    gtk_container_add(GTK_CONTAINER(buf->ui.log_scroll), buf->ui.log_view);
 
-    /* Add the scrolling window to the tab layout */
-    gtk_container_add_with_properties(GTK_CONTAINER(buf->ui.tab_layout), buf->ui.scroll,
+    /* Add the log scrolling window to the log and nick view */
+    gtk_container_add_with_properties(GTK_CONTAINER(buf->ui.log_and_nick), buf->ui.log_scroll,
+                                      "expand", TRUE, "fill", TRUE, NULL);
+
+    /* Add the separator between log and nicklist */
+    gtk_container_add(GTK_CONTAINER(buf->ui.log_and_nick), buf->ui.sep);
+
+    /* Create the nick list */
+
+    /* Add the nick list to the nick scrolling window */
+    gtk_container_add(GTK_CONTAINER(buf->ui.nick_scroll), buf->ui.nick_list);
+
+    /* Add the nick scrolling window to the log and nick view */
+    gtk_container_add(GTK_CONTAINER(buf->ui.log_and_nick), buf->ui.nick_scroll);
+
+    /* Add the log and nick view to the tab layout */
+    gtk_container_add_with_properties(GTK_CONTAINER(buf->ui.tab_layout), buf->ui.log_and_nick,
                                       "expand", TRUE, "fill", TRUE, NULL);
 
     /* Create the text entry */
@@ -112,7 +130,7 @@ void buffer_append_text(buffer_t* buffer, const gchar* prefix, const gchar* text
 
     /* Scroll to the end of the text view */
     mark = gtk_text_buffer_create_mark(buffer->ui.textbuf, NULL, &iter, FALSE);
-    gtk_text_view_scroll_to_mark(GTK_TEXT_VIEW(buffer->ui.textview), mark, 0, FALSE, 0, 0);
+    gtk_text_view_scroll_to_mark(GTK_TEXT_VIEW(buffer->ui.log_view), mark, 0, FALSE, 0, 0);
 
     g_free(str);
 }
