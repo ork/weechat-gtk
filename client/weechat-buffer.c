@@ -35,7 +35,8 @@ buffer_t* buffer_create(GVariant* buf)
     buffer->ui.log_view = gtk_text_view_new();
     buffer->ui.sep = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
     buffer->ui.nick_scroll = gtk_scrolled_window_new(0, 0);
-    buffer->ui.nick_list = gtk_text_view_new();
+    buffer->ui.nick_adapt = gtk_viewport_new(NULL, NULL);
+    buffer->ui.nick_list = gtk_list_box_new();
     buffer->ui.entry = gtk_entry_new();
 
     return buffer;
@@ -44,6 +45,9 @@ buffer_t* buffer_create(GVariant* buf)
 void buffer_ui_init(buffer_t* buf)
 {
     PangoFontDescription* font_desc = pango_font_description_from_string("Monospace 10");
+
+    /* Make the title selectable */
+    //gtk_label_set_selectable(GTK_LABEL(buf->ui.tab_title), TRUE);
 
     /* Add the tab title */
     gtk_container_add(GTK_CONTAINER(buf->ui.tab_layout), buf->ui.tab_title);
@@ -69,7 +73,15 @@ void buffer_ui_init(buffer_t* buf)
     /* Create the nick list */
 
     /* Add the nick list to the nick scrolling window */
-    gtk_container_add(GTK_CONTAINER(buf->ui.nick_scroll), buf->ui.nick_list);
+    GtkStyleContext* ctx = gtk_widget_get_style_context(buf->ui.tab_title);
+    GdkRGBA bg;
+    gtk_style_context_get_background_color(ctx, GTK_STATE_FLAG_NORMAL, &bg);
+    gtk_widget_override_background_color(buf->ui.nick_list, GTK_STATE_FLAG_NORMAL, &bg);
+    gtk_widget_override_background_color(buf->ui.nick_adapt, GTK_STATE_FLAG_NORMAL, &bg);
+
+    gtk_container_add(GTK_CONTAINER(buf->ui.nick_adapt), buf->ui.nick_list);
+    gtk_viewport_set_shadow_type(GTK_VIEWPORT(buf->ui.nick_adapt), GTK_SHADOW_NONE);
+    gtk_container_add(GTK_CONTAINER(buf->ui.nick_scroll), buf->ui.nick_adapt);
 
     /* Add the nick scrolling window to the log and nick view */
     gtk_container_add(GTK_CONTAINER(buf->ui.log_and_nick), buf->ui.nick_scroll);

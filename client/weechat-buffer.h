@@ -22,6 +22,7 @@ struct buffer_s {
         GtkWidget* log_view;
         GtkWidget* sep;
         GtkWidget* nick_scroll;
+        GtkWidget* nick_adapt;
         GtkWidget* nick_list;
         GtkWidget* entry;
         GtkTextBuffer* textbuf;
