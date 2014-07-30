@@ -45,9 +45,9 @@ void client_dispatch_buffer_line_added(client_t* client, GVariant* gv)
 
     /* Extract */
     GVariantDict* dict = g_variant_dict_new(gvline);
-    g_variant_dict_lookup(dict, "message", "ms", &message);
-    g_variant_dict_lookup(dict, "prefix", "ms", &prefix);
-    g_variant_dict_lookup(dict, "buffer", "ms", &buf_ptr);
+    g_variant_dict_lookup(dict, "message", "s", &message);
+    g_variant_dict_lookup(dict, "prefix", "s", &prefix);
+    g_variant_dict_lookup(dict, "buffer", "s", &buf_ptr);
     g_variant_dict_unref(dict);
 
     /* Display */
@@ -80,8 +80,8 @@ void client_dispatch_buffer_closing(client_t* client, GVariant* gv)
 
     /* Extract */
     GVariantDict* dict = g_variant_dict_new(gvline);
-    g_variant_dict_lookup(dict, "full_name", "ms", &full_name);
-    g_variant_dict_lookup(dict, "__path", "ms", &path);
+    g_variant_dict_lookup(dict, "full_name", "s", &full_name);
+    g_variant_dict_lookup(dict, "__path", "s", &path);
     g_variant_dict_unref(dict);
 
     g_hash_table_remove(client->buf_ptrs, path);
@@ -121,8 +121,8 @@ void client_dispatch_buffer_renamed(client_t* client, GVariant* gv)
     buffer_t* buf = g_hash_table_lookup(client->buffers, buf_name);
 
     /* Extract new names */
-    g_variant_dict_lookup(dict, "full_name", "ms", &buf->full_name);
-    g_variant_dict_lookup(dict, "short_name", "ms", &buf->short_name);
+    g_variant_dict_lookup(dict, "full_name", "s", &buf->full_name);
+    g_variant_dict_lookup(dict, "short_name", "s", &buf->short_name);
 
     /* Rename tab */
     gtk_label_set_text(GTK_LABEL(buf->ui.label), buffer_get_canonical_name(buf));
@@ -142,13 +142,13 @@ void client_dispatch_buffer_title_changed(client_t* client, GVariant* gv)
 
     /* Extract the full name of the buffer */
     gchar* full_name;
-    g_variant_dict_lookup(dict, "full_name", "ms", &full_name);
+    g_variant_dict_lookup(dict, "full_name", "s", &full_name);
 
     /* Retrieve the buffer */
     buffer_t* buf = g_hash_table_lookup(client->buffers, full_name);
 
     /* Extract new title */
-    g_variant_dict_lookup(dict, "title", "ms", &buf->title);
+    g_variant_dict_lookup(dict, "title", "s", &buf->title);
 
     g_variant_dict_unref(dict);
     g_free(full_name);
@@ -163,7 +163,7 @@ void client_dispatch_buffer_localvar_added(client_t* client, GVariant* gv)
     /* Init dict parser */
     GVariantDict* dict = g_variant_dict_new(gvline);
     gchar* full_name;
-    g_variant_dict_lookup(dict, "full_name", "ms", &full_name);
+    g_variant_dict_lookup(dict, "full_name", "s", &full_name);
 
     /* Retrieve the buffer */
     buffer_t* buf = g_hash_table_lookup(client->buffers, full_name);
@@ -191,7 +191,7 @@ void client_dispatch_buffer_localvar_removed(client_t* client, GVariant* gv)
     /* Init dict parser */
     GVariantDict* dict = g_variant_dict_new(gvline);
     gchar* full_name;
-    g_variant_dict_lookup(dict, "full_name", "ms", &full_name);
+    g_variant_dict_lookup(dict, "full_name", "s", &full_name);
 
     /* Retrieve the buffer */
     buffer_t* buf = g_hash_table_lookup(client->buffers, full_name);
@@ -222,8 +222,39 @@ void client_dispatch_nicklist(client_t* client, GVariant* gv)
     GVariant* child;
     g_variant_iter_init(&iter, gvline);
     while ((child = g_variant_iter_next_value(&iter))) {
-        g_printf("%s\n\n", g_variant_print(child, TRUE));
+        gchar group, visible;
+        gchar* prefix, *name;
+        gint level;
+        GVariant* path;
 
+        g_printf("%s\n\n", g_variant_print(child, TRUE));
+        GVariantDict* dict = g_variant_dict_new(child);
+
+        g_variant_dict_lookup(dict, "prefix", "s", &prefix);
+        g_variant_dict_lookup(dict, "name", "s", &name);
+        g_variant_dict_lookup(dict, "level", "i", &level);
+        g_variant_dict_lookup(dict, "group", "y", &group);
+        g_variant_dict_lookup(dict, "visible", "y", &visible);
+        path = g_variant_dict_lookup_value(dict, "__path", NULL);
+
+        gsize ptrs;
+        const gchar** paths = g_variant_get_strv(path, &ptrs);
+
+        for (gsize i = 0; i < ptrs; ++i) {
+            g_printf("ptr: %s -> %s\n", paths[i], g_hash_table_lookup(client->buf_ptrs, paths[i]));
+        }
+
+        // If it is a nick
+        if (level == 0 && group == 0) {
+            g_printf("User => Prefix: %s, Name: %s\n", prefix, name);
+        }
+
+        // If it is a group
+        if (group != 0) {
+            g_printf("Group => Name: %s\n", name);
+        }
+
+        g_variant_dict_unref(dict);
         g_variant_unref(child);
     }
 }

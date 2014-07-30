@@ -13,9 +13,9 @@ buffer_t* buffer_create(GVariant* buf)
     GVariantDict* dict = g_variant_dict_new(buf);
 
     /* Extract GVariant dict to C struct */
-    g_variant_dict_lookup(dict, "full_name", "ms", &buffer->full_name);
-    g_variant_dict_lookup(dict, "short_name", "ms", &buffer->short_name);
-    g_variant_dict_lookup(dict, "title", "ms", &buffer->title);
+    g_variant_dict_lookup(dict, "full_name", "s", &buffer->full_name);
+    g_variant_dict_lookup(dict, "short_name", "s", &buffer->short_name);
+    g_variant_dict_lookup(dict, "title", "s", &buffer->title);
     g_variant_dict_lookup(dict, "notify", "i", &buffer->notify);
     g_variant_dict_lookup(dict, "number", "i", &buffer->number);
     buffer->pointers = g_variant_dup_strv(
@@ -119,7 +119,7 @@ void buffer_delete(buffer_t* buffer)
 
 const gchar* buffer_get_canonical_name(buffer_t* buffer)
 {
-    if (buffer->short_name != NULL) {
+    if (buffer->short_name != NULL && g_strcmp0(buffer->short_name, "") != 0) {
         return buffer->short_name;
     } else {
         return buffer->full_name;

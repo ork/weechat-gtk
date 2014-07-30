@@ -207,7 +207,7 @@ answer_t* weechat_receive(weechat_t* weechat)
     while (remaining > 0) {
         type_t type = weechat_decode_type(mem, &remaining);
         //weechat_unmarshal(mem, type, &remaining);
-        GVariant* item = weechat_decode_from_arg_to_gvariant(mem, type, TRUE, &remaining);
+        GVariant* item = weechat_decode_from_arg_to_gvariant(mem, type, FALSE, &remaining);
         g_variant_builder_add_value(builder, item);
     }
 
@@ -252,8 +252,9 @@ gchar* weechat_decode_str(GDataInputStream* stream, gsize* remaining)
 {
     gint32 str_len = weechat_decode_int(stream, remaining);
 
+    /* NULL should be returned, but GVariant stuff would be more difficult */
     if (str_len == -1) {
-        return NULL;
+        return g_strdup("");
     }
 
     if (str_len == 0) {
@@ -517,7 +518,7 @@ GVariant* weechat_decode_hda(GDataInputStream* stream, gsize* remaining)
             type_t cur_type = type_char_to_enum(name_and_type[1]);
 
             /* We decode using the right type, allowing NULL values */
-            GVariant* val = weechat_decode_from_arg_to_gvariant(stream, cur_type, TRUE, remaining);
+            GVariant* val = weechat_decode_from_arg_to_gvariant(stream, cur_type, FALSE, remaining);
 
             /* We insert with name as the key */
             g_variant_dict_insert_value(dict, name_and_type[0], val);
