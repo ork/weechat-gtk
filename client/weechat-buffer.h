@@ -27,6 +27,10 @@ struct buffer_s {
         GtkWidget* entry;
         GtkTextBuffer* textbuf;
     } ui;
+    struct {
+        GHashTable* groups;
+        GHashTable* nicks;
+    } nicklist;
 };
 typedef struct buffer_s buffer_t;
 

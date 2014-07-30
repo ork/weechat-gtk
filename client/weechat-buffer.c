@@ -26,6 +26,9 @@ buffer_t* buffer_create(GVariant* buf)
     /* Create local variables hash table */
     buffer->local_variables = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
 
+    buffer->nicklist.groups = g_hash_table_new(g_str_hash, g_str_equal);
+    buffer->nicklist.nicks = g_hash_table_new(g_str_hash, g_str_equal);
+
     /* Create widgets */
     buffer->ui.tab_layout = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     buffer->ui.tab_title = gtk_label_new(buffer->title);
@@ -78,9 +81,12 @@ void buffer_ui_init(buffer_t* buf)
     gtk_style_context_get_background_color(ctx, GTK_STATE_FLAG_NORMAL, &bg);
     gtk_widget_override_background_color(buf->ui.nick_list, GTK_STATE_FLAG_NORMAL, &bg);
     gtk_widget_override_background_color(buf->ui.nick_adapt, GTK_STATE_FLAG_NORMAL, &bg);
+    gtk_list_box_set_selection_mode(GTK_LIST_BOX(buf->ui.nick_list), GTK_SELECTION_NONE);
 
     gtk_container_add(GTK_CONTAINER(buf->ui.nick_adapt), buf->ui.nick_list);
     gtk_viewport_set_shadow_type(GTK_VIEWPORT(buf->ui.nick_adapt), GTK_SHADOW_NONE);
+    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(buf->ui.nick_scroll),
+                                   GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
     gtk_container_add(GTK_CONTAINER(buf->ui.nick_scroll), buf->ui.nick_adapt);
 
     /* Add the nick scrolling window to the log and nick view */

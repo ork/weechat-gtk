@@ -124,6 +124,9 @@ gboolean client_init(client_t* client, const gchar* host_and_port,
     /* Make all widgets visible */
     gtk_widget_show_all(GTK_WIDGET(client->ui.window));
 
+    /* Request current nick list */
+    weechat_send(client->weechat, "(_nicklist) nicklist");
+
     /* Request buffer sync */
     weechat_send(client->weechat, "sync");
 

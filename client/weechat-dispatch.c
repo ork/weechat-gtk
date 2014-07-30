@@ -227,7 +227,6 @@ void client_dispatch_nicklist(client_t* client, GVariant* gv)
         gint level;
         GVariant* path;
 
-        g_printf("%s\n\n", g_variant_print(child, TRUE));
         GVariantDict* dict = g_variant_dict_new(child);
 
         g_variant_dict_lookup(dict, "prefix", "s", &prefix);
@@ -237,21 +236,30 @@ void client_dispatch_nicklist(client_t* client, GVariant* gv)
         g_variant_dict_lookup(dict, "visible", "y", &visible);
         path = g_variant_dict_lookup_value(dict, "__path", NULL);
 
-        gsize ptrs;
-        const gchar** paths = g_variant_get_strv(path, &ptrs);
+        const gchar** paths = g_variant_get_strv(path, NULL);
 
-        for (gsize i = 0; i < ptrs; ++i) {
-            g_printf("ptr: %s -> %s\n", paths[i], g_hash_table_lookup(client->buf_ptrs, paths[i]));
-        }
+        buffer_t* buf = g_hash_table_lookup(client->buffers,
+                                            g_hash_table_lookup(client->buf_ptrs, paths[0]));
 
         // If it is a nick
         if (level == 0 && group == 0) {
-            g_printf("User => Prefix: %s, Name: %s\n", prefix, name);
+
+            if (visible == 1) {
+                /* Construct label */
+                GtkWidget* row = gtk_label_new("");
+                gchar* str = g_markup_printf_escaped("<b>%s</b> %s", prefix, name);
+                gtk_label_set_markup(GTK_LABEL(row), str);
+                gtk_misc_set_alignment(GTK_MISC(row), 0, 0);
+                gtk_misc_set_padding(GTK_MISC(row), 5, 3);
+                g_free(str);
+
+                gtk_container_add(GTK_CONTAINER(buf->ui.nick_list), row);
+                gtk_widget_show_all(GTK_WIDGET(buf->ui.nick_list));
+            }
         }
 
         // If it is a group
         if (group != 0) {
-            g_printf("Group => Name: %s\n", name);
         }
 
         g_variant_dict_unref(dict);
