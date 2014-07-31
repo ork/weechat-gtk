@@ -150,6 +150,9 @@ void client_dispatch_buffer_title_changed(client_t* client, GVariant* gv)
     /* Extract new title */
     g_variant_dict_lookup(dict, "title", "s", &buf->title);
 
+    /* Update the buffer title */
+    gtk_label_set_text(GTK_LABEL(buf->ui.tab_title), buf->title);
+
     g_variant_dict_unref(dict);
     g_free(full_name);
 }
