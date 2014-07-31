@@ -3,6 +3,25 @@
 #include "../lib/weechat-commands.h"
 #include "weechat-callbacks.h"
 
+gboolean
+scroll_tab(GtkWidget* widget,
+           GdkEvent* event,
+           G_GNUC_UNUSED gpointer user_data)
+{
+
+    gdouble delta_x, delta_y;
+
+    gdk_event_get_scroll_deltas(event, &delta_x, &delta_y);
+
+    if (delta_y > 0) {
+        gtk_notebook_next_page(GTK_NOTEBOOK(widget));
+    } else {
+        gtk_notebook_prev_page(GTK_NOTEBOOK(widget));
+    }
+
+    return FALSE;
+}
+
 void cb_tabswitch(GtkNotebook* notebook,
                   GtkWidget* page,
                   G_GNUC_UNUSED guint page_num,

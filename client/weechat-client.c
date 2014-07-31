@@ -50,6 +50,10 @@ gboolean client_build_ui(client_t* client)
     client->ui.notebook = gtk_builder_get_object(builder, "notebook");
     g_signal_connect(client->ui.notebook, "switch-page",
                      G_CALLBACK(cb_tabswitch), NULL);
+    g_signal_connect(client->ui.notebook, "scroll-event",
+                     G_CALLBACK(scroll_tab), NULL);
+    gtk_widget_add_events(GTK_WIDGET(client->ui.notebook),
+                          GDK_SCROLL_MASK | GDK_SMOOTH_SCROLL_MASK);
 
     /* Load the CSS */
     GtkCssProvider* provider = gtk_css_provider_new();
