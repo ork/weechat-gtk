@@ -57,11 +57,11 @@ void client_dispatch_buffer_line_added(client_t* client, GVariant* gv)
     buffer_append_text(buf, prefix, message);
 
     /* Hilight tab */
-    GdkRGBA red = { 1.0, 0.0, 0.0, 1.0 };
+    GtkStyleContext* style_ctx = gtk_widget_get_style_context(buf->ui.label);
     gint cur = gtk_notebook_get_current_page(GTK_NOTEBOOK(client->ui.notebook));
     gint added = gtk_notebook_page_num(GTK_NOTEBOOK(client->ui.notebook), buf->ui.buffer_layout);
-    if (cur != added) {
-        gtk_widget_override_color(buf->ui.label, GTK_STATE_FLAG_NORMAL, &red);
+    if (cur != added && !gtk_style_context_has_class(style_ctx, "wassup")) {
+        gtk_style_context_add_class(style_ctx, "wassup");
     }
 
     g_free(message);

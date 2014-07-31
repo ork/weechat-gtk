@@ -1,3 +1,18 @@
+
+/* Ensure nicklist color */
 .bgcolorhack {
-  background-color: @label_bg_color
+    background-color: @label_bg_color;
+}
+
+.log {
+    font-family: monospace;
+}
+
+GtkEntry {
+	border-width: 0;
+}
+
+/* When a buffer has something new */
+.wassup {
+    color: red;
 }
