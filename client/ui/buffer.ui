@@ -19,6 +19,17 @@
       </packing>
     </child>
     <child>
+      <object class="GtkSeparator" id="separator1">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+      </object>
+      <packing>
+        <property name="expand">False</property>
+        <property name="fill">True</property>
+        <property name="position">1</property>
+      </packing>
+    </child>
+    <child>
       <object class="GtkBox" id="content">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
@@ -49,6 +60,7 @@
           <object class="GtkSeparator" id="separator">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
+            <property name="orientation">vertical</property>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -92,7 +104,7 @@
       <packing>
         <property name="expand">True</property>
         <property name="fill">True</property>
-        <property name="position">1</property>
+        <property name="position">2</property>
       </packing>
     </child>
     <child>
@@ -105,7 +117,7 @@
       <packing>
         <property name="expand">False</property>
         <property name="fill">True</property>
-        <property name="position">2</property>
+        <property name="position">3</property>
       </packing>
     </child>
   </object>
