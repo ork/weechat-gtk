@@ -31,3 +31,5 @@ void client_buffer_add(client_t* client, GVariant* received);
 
 /* Load existing remote buffers */
 void client_load_existing_buffers(client_t* client);
+
+void client_update_nicklists(gpointer key, gpointer value, gpointer user_data);

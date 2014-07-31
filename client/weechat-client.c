@@ -73,7 +73,7 @@ void client_buffer_add(client_t* client, GVariant* received)
 
     /* Add the tab to the tab bar */
     gtk_notebook_insert_page(GTK_NOTEBOOK(client->ui.notebook),
-                             GTK_WIDGET(buf->ui.tab_layout), GTK_WIDGET(buf->ui.label), -1);
+                             GTK_WIDGET(buf->ui.tab_layout), GTK_WIDGET(buf->ui.label), buf->number);
 }
 
 void client_load_existing_buffers(client_t* client)
@@ -134,4 +134,40 @@ gboolean client_init(client_t* client, const gchar* host_and_port,
     g_thread_new("wc-recv", (GThreadFunc) & recv_thread, client);
 
     return TRUE;
+}
+
+void client_update_nicklists(G_GNUC_UNUSED gpointer key,
+                             gpointer value,
+                             G_GNUC_UNUSED gpointer user_data)
+{
+    buffer_t* buffer = value;
+
+    GHashTableIter iter;
+    gpointer k, v;
+
+    /* For each nick */
+    g_hash_table_iter_init(&iter, buffer->nicklist.nicks);
+    while (g_hash_table_iter_next(&iter, &k, &v)) {
+        nicklist_item_t* nicklist_item = v;
+
+        /* If it should be shown */
+        if (nicklist_item->visible) {
+
+            /* Construct nick label */
+            GtkWidget* row = gtk_label_new("");
+            gchar* str = g_markup_printf_escaped("<b><tt>%s</tt></b> %s",
+                                                 nicklist_item->prefix,
+                                                 nicklist_item->name);
+            gtk_label_set_markup(GTK_LABEL(row), str);
+            gtk_misc_set_alignment(GTK_MISC(row), 0, 0);
+            gtk_misc_set_padding(GTK_MISC(row), 5, 3);
+            g_free(str);
+
+            /* Add nick label */
+            gtk_container_add(GTK_CONTAINER(buffer->ui.nick_list), row);
+        }
+    }
+
+    /* Show all added labels */
+    gtk_widget_show_all(GTK_WIDGET(buffer->ui.nick_list));
 }

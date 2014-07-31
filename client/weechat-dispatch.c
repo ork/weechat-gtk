@@ -220,20 +220,23 @@ void client_dispatch_nicklist(client_t* client, GVariant* gv)
 
     GVariantIter iter;
     GVariant* child;
+
+    /* For each nick/group */
     g_variant_iter_init(&iter, gvline);
     while ((child = g_variant_iter_next_value(&iter))) {
+        nicklist_item_t* nicklist_item = nicklist_item_create();
+
         gchar group, visible;
-        gchar* prefix, *name;
-        gint level;
         GVariant* path;
 
         GVariantDict* dict = g_variant_dict_new(child);
 
-        g_variant_dict_lookup(dict, "prefix", "s", &prefix);
-        g_variant_dict_lookup(dict, "name", "s", &name);
-        g_variant_dict_lookup(dict, "level", "i", &level);
-        g_variant_dict_lookup(dict, "group", "y", &group);
+        g_variant_dict_lookup(dict, "prefix", "s", &nicklist_item->prefix);
+        g_variant_dict_lookup(dict, "name", "s", &nicklist_item->name);
+        g_variant_dict_lookup(dict, "level", "i", &nicklist_item->level);
         g_variant_dict_lookup(dict, "visible", "y", &visible);
+        nicklist_item->visible = (visible == 1);
+        g_variant_dict_lookup(dict, "group", "y", &group);
         path = g_variant_dict_lookup_value(dict, "__path", NULL);
 
         const gchar** paths = g_variant_get_strv(path, NULL);
@@ -241,28 +244,17 @@ void client_dispatch_nicklist(client_t* client, GVariant* gv)
         buffer_t* buf = g_hash_table_lookup(client->buffers,
                                             g_hash_table_lookup(client->buf_ptrs, paths[0]));
 
-        // If it is a nick
-        if (level == 0 && group == 0) {
-
-            if (visible == 1) {
-                /* Construct label */
-                GtkWidget* row = gtk_label_new("");
-                gchar* str = g_markup_printf_escaped("<b>%s</b> %s", prefix, name);
-                gtk_label_set_markup(GTK_LABEL(row), str);
-                gtk_misc_set_alignment(GTK_MISC(row), 0, 0);
-                gtk_misc_set_padding(GTK_MISC(row), 5, 3);
-                g_free(str);
-
-                gtk_container_add(GTK_CONTAINER(buf->ui.nick_list), row);
-                gtk_widget_show_all(GTK_WIDGET(buf->ui.nick_list));
-            }
-        }
-
-        // If it is a group
-        if (group != 0) {
+        /* Add the nick/group to its buffer's list */
+        if (group == 0) {
+            g_hash_table_insert(buf->nicklist.nicks, nicklist_item->name, nicklist_item);
+        } else {
+            g_hash_table_insert(buf->nicklist.groups, nicklist_item->name, nicklist_item);
         }
 
         g_variant_dict_unref(dict);
         g_variant_unref(child);
     }
+
+    /* Update UI */
+    g_hash_table_foreach(client->buffers, client_update_nicklists, NULL);
 }

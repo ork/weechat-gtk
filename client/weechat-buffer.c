@@ -3,6 +3,27 @@
 #include <glib/gprintf.h>
 #include "weechat-buffer.h"
 
+/* Create a nicklist item */
+nicklist_item_t* nicklist_item_create()
+{
+    nicklist_item_t* nicklist_item = g_try_malloc0(sizeof(nicklist_item_t));
+
+    if (nicklist_item == NULL) {
+        return NULL;
+    }
+
+    return nicklist_item;
+}
+
+void nicklist_item_delete(nicklist_item_t* nicklist_item)
+{
+    g_free(nicklist_item->name);
+    g_free(nicklist_item->color);
+    g_free(nicklist_item->prefix);
+    g_free(nicklist_item->prefix_color);
+    g_free(nicklist_item);
+}
+
 buffer_t* buffer_create(GVariant* buf)
 {
     buffer_t* buffer = g_try_malloc0(sizeof(buffer_t));
@@ -26,8 +47,10 @@ buffer_t* buffer_create(GVariant* buf)
     /* Create local variables hash table */
     buffer->local_variables = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
 
-    buffer->nicklist.groups = g_hash_table_new(g_str_hash, g_str_equal);
-    buffer->nicklist.nicks = g_hash_table_new(g_str_hash, g_str_equal);
+    buffer->nicklist.groups = g_hash_table_new_full(g_str_hash, g_str_equal,
+                                                    g_free, (GDestroyNotify)nicklist_item_delete);
+    buffer->nicklist.nicks = g_hash_table_new_full(g_str_hash, g_str_equal,
+                                                   g_free, (GDestroyNotify)nicklist_item_delete);
 
     /* Create widgets */
     buffer->ui.tab_layout = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);

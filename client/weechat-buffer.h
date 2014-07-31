@@ -5,6 +5,22 @@
 #include <glib.h>
 #include <gtk/gtk.h>
 
+struct nicklist_item_s {
+    gboolean visible;
+    gint level;
+    gchar* name;
+    gchar* color;
+    gchar* prefix;
+    gchar* prefix_color;
+};
+typedef struct nicklist_item_s nicklist_item_t;
+
+/* Create a nicklist item */
+nicklist_item_t* nicklist_item_create();
+
+/* Delete a nicklist item */
+void nicklist_item_delete(nicklist_item_t* nicklist_item);
+
 struct buffer_s {
     gchar** pointers;
     gchar* full_name;
