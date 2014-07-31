@@ -52,88 +52,36 @@ buffer_t* buffer_create(GVariant* buf)
     buffer->nicklist.nicks = g_hash_table_new_full(g_str_hash, g_str_equal,
                                                    g_free, (GDestroyNotify)nicklist_item_delete);
 
-    /* Create widgets */
-    buffer->ui.tab_layout = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-    buffer->ui.tab_title = gtk_label_new(buffer->title);
-    buffer->ui.label = gtk_label_new(buffer_get_canonical_name(buffer));
-    buffer->ui.log_and_nick = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-    buffer->ui.log_scroll = gtk_scrolled_window_new(0, 0);
-    buffer->ui.log_view = gtk_text_view_new();
-    buffer->ui.sep = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
-    buffer->ui.nick_scroll = gtk_scrolled_window_new(0, 0);
-    buffer->ui.nick_adapt = gtk_viewport_new(NULL, NULL);
-    buffer->ui.nick_list = gtk_list_box_new();
-    buffer->ui.entry = gtk_entry_new();
-
     return buffer;
 }
 
 void buffer_ui_init(buffer_t* buf)
 {
-    PangoFontDescription* font_desc = pango_font_description_from_string("Monospace 10");
+    /* Load buffer layout from the Glade XML template */
+    GtkBuilder* builder = gtk_builder_new();
+    gtk_builder_add_from_file(builder, "ui/buffer.ui", NULL);
 
-    /* Make the title selectable */
-    //gtk_label_set_selectable(GTK_LABEL(buf->ui.tab_title), TRUE);
+    buf->ui.buffer_layout = GTK_WIDGET(gtk_builder_get_object(builder, "buffer_layout"));
+    buf->ui.tab_title = GTK_WIDGET(gtk_builder_get_object(builder, "buffer_title"));
+    buf->ui.log_view = GTK_WIDGET(gtk_builder_get_object(builder, "log"));
+    buf->ui.nick_adapt = GTK_WIDGET(gtk_builder_get_object(builder, "viewport"));
+    buf->ui.nick_list = GTK_WIDGET(gtk_builder_get_object(builder, "nicklist"));
+    buf->ui.entry = GTK_WIDGET(gtk_builder_get_object(builder, "entry"));
 
-    /* Add the tab title */
-    gtk_container_add(GTK_CONTAINER(buf->ui.tab_layout), buf->ui.tab_title);
-
-    /* Create the log view */
+    /* Get the text buffer */
     buf->ui.textbuf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(buf->ui.log_view));
-    gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(buf->ui.log_view), GTK_WRAP_WORD);
-    gtk_text_view_set_cursor_visible(GTK_TEXT_VIEW(buf->ui.log_view), FALSE);
-    gtk_text_view_set_editable(GTK_TEXT_VIEW(buf->ui.log_view), FALSE);
-    gtk_widget_override_font(buf->ui.log_view, font_desc);
-    gtk_widget_set_can_focus(buf->ui.log_view, FALSE);
 
-    /* Add the log view to the log scrolling window */
-    gtk_container_add(GTK_CONTAINER(buf->ui.log_scroll), buf->ui.log_view);
-
-    /* Add the log scrolling window to the log and nick view */
-    gtk_container_add_with_properties(GTK_CONTAINER(buf->ui.log_and_nick), buf->ui.log_scroll,
-                                      "expand", TRUE, "fill", TRUE, NULL);
-
-    /* Add the separator between log and nicklist */
-    gtk_container_add(GTK_CONTAINER(buf->ui.log_and_nick), buf->ui.sep);
-
-    /* Create the nick list */
-
-    /* Add the nick list to the nick scrolling window */
-    GtkStyleContext* ctx = gtk_widget_get_style_context(buf->ui.tab_title);
-    GdkRGBA bg;
-    gtk_style_context_get_background_color(ctx, GTK_STATE_FLAG_NORMAL, &bg);
-    gtk_widget_override_background_color(buf->ui.nick_list, GTK_STATE_FLAG_NORMAL, &bg);
-    gtk_widget_override_background_color(buf->ui.nick_adapt, GTK_STATE_FLAG_NORMAL, &bg);
-    gtk_list_box_set_selection_mode(GTK_LIST_BOX(buf->ui.nick_list), GTK_SELECTION_NONE);
-
-    gtk_container_add(GTK_CONTAINER(buf->ui.nick_adapt), buf->ui.nick_list);
-    gtk_viewport_set_shadow_type(GTK_VIEWPORT(buf->ui.nick_adapt), GTK_SHADOW_NONE);
-    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(buf->ui.nick_scroll),
-                                   GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
-    gtk_container_add(GTK_CONTAINER(buf->ui.nick_scroll), buf->ui.nick_adapt);
-
-    /* Add the nick scrolling window to the log and nick view */
-    gtk_container_add(GTK_CONTAINER(buf->ui.log_and_nick), buf->ui.nick_scroll);
-
-    /* Add the log and nick view to the tab layout */
-    gtk_container_add_with_properties(GTK_CONTAINER(buf->ui.tab_layout), buf->ui.log_and_nick,
-                                      "expand", TRUE, "fill", TRUE, NULL);
-
-    /* Create the text entry */
-    gtk_entry_set_has_frame(GTK_ENTRY(buf->ui.entry), FALSE);
-    gtk_widget_set_can_default(buf->ui.entry, TRUE);
-    g_object_set(buf->ui.entry, "activates-default", TRUE, NULL);
-
-    /* Add the text entry to the tab layout */
-    gtk_container_add(GTK_CONTAINER(buf->ui.tab_layout), buf->ui.entry);
+    /* Show the buffer title */
+    gtk_label_set_text(GTK_LABEL(buf->ui.tab_title), buf->title);
 
     /* Set the widget name to the full_name to help the callback */
-    gtk_widget_set_name(GTK_WIDGET(buf->ui.tab_layout), buf->full_name);
+    gtk_widget_set_name(GTK_WIDGET(buf->ui.buffer_layout), buf->full_name);
     gtk_widget_set_name(GTK_WIDGET(buf->ui.entry), buf->full_name);
 
+    /* Create the tab label */
+    buf->ui.label = gtk_label_new(buffer_get_canonical_name(buf));
     gtk_label_set_width_chars(GTK_LABEL(buf->ui.label), 20);
     gtk_label_set_ellipsize(GTK_LABEL(buf->ui.label), PANGO_ELLIPSIZE_END);
-    //gtk_misc_set_alignment(GTK_MISC(buf->ui.label), 1, 0);
 }
 
 void buffer_delete(buffer_t* buffer)

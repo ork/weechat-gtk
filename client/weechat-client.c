@@ -41,7 +41,7 @@ gboolean client_build_ui(client_t* client)
 {
     /* Load base layout from the Glade XML template */
     GtkBuilder* builder = gtk_builder_new();
-    gtk_builder_add_from_file(builder, "window.glade", NULL);
+    gtk_builder_add_from_file(builder, "ui/window.ui", NULL);
 
     client->ui.window = gtk_builder_get_object(builder, "window");
     g_signal_connect(client->ui.window, "destroy",
@@ -50,6 +50,19 @@ gboolean client_build_ui(client_t* client)
     client->ui.notebook = gtk_builder_get_object(builder, "notebook");
     g_signal_connect(client->ui.notebook, "switch-page",
                      G_CALLBACK(cb_tabswitch), NULL);
+
+    /* Load the CSS */
+    GtkCssProvider* provider = gtk_css_provider_new();
+    GdkDisplay* display = gdk_display_get_default();
+    GdkScreen* screen = gdk_display_get_default_screen(display);
+
+    gtk_style_context_add_provider_for_screen(screen,
+                                              GTK_STYLE_PROVIDER(provider),
+                                              GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+
+    gtk_css_provider_load_from_path(GTK_CSS_PROVIDER(provider),
+                                    "ui/custom.css", NULL);
+    g_object_unref(provider);
 
     return TRUE;
 }
@@ -73,7 +86,7 @@ void client_buffer_add(client_t* client, GVariant* received)
 
     /* Add the tab to the tab bar */
     gtk_notebook_insert_page(GTK_NOTEBOOK(client->ui.notebook),
-                             GTK_WIDGET(buf->ui.tab_layout), GTK_WIDGET(buf->ui.label), buf->number);
+                             GTK_WIDGET(buf->ui.buffer_layout), GTK_WIDGET(buf->ui.label), buf->number);
 }
 
 void client_load_existing_buffers(client_t* client)

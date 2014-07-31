@@ -31,13 +31,10 @@ struct buffer_s {
     GHashTable* local_variables;
     struct {
         GtkWidget* label;
-        GtkWidget* tab_layout;
+
+        GtkWidget* buffer_layout;
         GtkWidget* tab_title;
-        GtkWidget* log_and_nick;
-        GtkWidget* log_scroll;
         GtkWidget* log_view;
-        GtkWidget* sep;
-        GtkWidget* nick_scroll;
         GtkWidget* nick_adapt;
         GtkWidget* nick_list;
         GtkWidget* entry;
