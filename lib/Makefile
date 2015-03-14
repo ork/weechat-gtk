@@ -1,4 +1,4 @@
-TARGET   = lgweechat.so
+TARGET   = libgweechat.so
 CC       = gcc -fdiagnostics-color=always
 
 CFLAGS   = -std=c99 -O3 -g -fPIC -Wall -Wextra -Wpedantic -Wstrict-aliasing
@@ -23,5 +23,5 @@ clean:
 	@rm -rf *.o
 
 mrproper: clean
-	@rm -rf $(EXEC)
+	@rm -rf $(TARGET)
 			
