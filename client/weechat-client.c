@@ -171,13 +171,15 @@ void client_update_nicklists(G_GNUC_UNUSED gpointer key,
         if (nicklist_item->visible) {
 
             /* Construct nick label */
-            GtkWidget* row = gtk_label_new("");
+            GtkWidget* row = gtk_widget_new(GTK_TYPE_LABEL, "xalign", 0.,
+                                                            "yalign", 0.,
+                                                            "margin-left", 5.,
+                                                            "margin-right", 3.,
+                                                            NULL);
             gchar* str = g_markup_printf_escaped("<b><tt>%s</tt></b> %s",
                                                  nicklist_item->prefix,
                                                  nicklist_item->name);
             gtk_label_set_markup(GTK_LABEL(row), str);
-            gtk_misc_set_alignment(GTK_MISC(row), 0, 0);
-            gtk_misc_set_padding(GTK_MISC(row), 5, 3);
             g_free(str);
 
             /* Add nick label */
